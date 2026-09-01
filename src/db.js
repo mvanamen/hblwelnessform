@@ -6,7 +6,7 @@ const bcrypt = require('bcryptjs');
 const dataDir = path.join(__dirname, '..', 'data');
 fs.mkdirSync(dataDir, { recursive: true });
 
-const db = new Database(path.join(dataDir, 'herbaforms.db'));
+const db = new Database(process.env.DB_PATH || path.join(dataDir, 'herbaforms.db'));
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 

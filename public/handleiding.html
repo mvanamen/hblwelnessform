@@ -47,6 +47,12 @@
   td { padding: 9px 10px; border-bottom: 1px solid var(--hairline); color: var(--ink-2); vertical-align: top; }
   .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 650; }
   .badge.g { background: #e0f2e0; color: #1d6b1d; } .badge.w { background: var(--warn-soft); color: var(--warn-text); } .badge.r { background: #f8e7e7; color: #c23434; }
+  .fig { margin: 18px 0 22px; }
+  .fig img { width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--hairline); box-shadow: 0 10px 28px -14px rgba(20,24,18,.25); }
+  .fig figcaption { font-size: 13px; color: var(--ink-3); margin-top: 7px; text-align: center; }
+  .duo { display: grid; grid-template-columns: 1fr 250px; gap: 18px; align-items: start; }
+  @media (max-width: 660px) { .duo { grid-template-columns: 1fr; } .duo .fig.phone { max-width: 280px; margin-left: auto; margin-right: auto; } }
+  figure { margin: 18px 0 22px; padding: 0; }
   footer { text-align: center; color: var(--ink-3); font-size: 13.5px; padding: 10px 20px 40px; }
   a.top { color: var(--brand); text-decoration: none; font-size: 13.5px; font-weight: 600; }
   @media print {
@@ -89,6 +95,7 @@
   <h3>Inloggen</h3>
   <p>Log in met je e-mailadres en wachtwoord. Kreeg je van je coach een <b>tijdelijk wachtwoord</b> (begint met <span class="kbd">HF-</span>)? Dan vraagt de app bij je eerste login om direct een eigen wachtwoord te kiezen (minimaal 8 tekens).</p>
 
+<div class="duo"><figure class="fig"><img src="/img/handleiding/d-login.jpg" alt="Het inlogscherm op desktop en tablet" loading="lazy"><figcaption>Het inlogscherm op desktop en tablet</figcaption></figure><figure class="fig phone"><img src="/img/handleiding/m-login.jpg" alt="Op de telefoon" loading="lazy"><figcaption>Op de telefoon</figcaption></figure></div>
   <h3>Wachtwoord vergeten</h3>
   <div class="step"><div class="nr">1</div><div>Klik op het loginscherm op <span class="kbd">Wachtwoord vergeten?</span></div></div>
   <div class="step"><div class="nr">2</div><div>Vul je e-mailadres in — je ontvangt binnen een minuut een e-mail van <b>no-reply@hblwellnessform.com</b> (check ook je spamfolder).</div></div>
@@ -109,6 +116,7 @@
     <li><b>Via je coach persoonlijk:</b> die maakt een account voor je aan en geeft je een tijdelijk wachtwoord. Bij je eerste login kies je een eigen wachtwoord.</li>
   </ul>
 
+<figure class="fig phone"><img src="/img/handleiding/m-register.jpg" alt="Aanmelden via een uitnodigingslink van je coach (telefoon)" loading="lazy"><figcaption>Aanmelden via een uitnodigingslink van je coach (telefoon)</figcaption></figure>
   <h3>Stap 1: vul je profiel in (intake)</h3>
   <p>Na je eerste login vraagt de app om je <b>profiel compleet te maken</b>. Dit is het intakeformulier waarmee je coach jou goed kan begeleiden. Het bestaat uit vijf onderdelen:</p>
   <table>
@@ -120,6 +128,7 @@
     <tr><td><b>Gewoonten</b></td><td>Maaltijden, snacken, buitenshuis eten, water, wat je verder drinkt, wanneer je moe/hongerig bent, medicatie</td></tr>
   </table>
   <p>Velden met een <b>*</b> zijn verplicht. Je kunt je profiel later altijd bijwerken via <span class="kbd">Profiel</span>.</p>
+<figure class="fig"><img src="/img/handleiding/d-profiel.jpg" alt="Het intakeformulier (bovenste deel)" loading="lazy"><figcaption>Het intakeformulier (bovenste deel)</figcaption></figure>
 
   <h3>Stap 2: doe regelmatig een check-in</h3>
   <p>De check-in is het hart van de app: zo zien jij en je coach je voortgang. Klik op <span class="kbd">+ Nieuwe check-in</span> en vul in:</p>
@@ -132,9 +141,11 @@
     <li><b>Notities</b>: bijzonderheden voor jezelf en je coach</li>
   </ul>
   <p>Alleen de datum is verplicht — de rest mag je leeg laten. Maar: hoe meer je invult, hoe meer je grafieken je vertellen.</p>
+<div class="duo"><figure class="fig"><img src="/img/handleiding/d-checkin.jpg" alt="Het check-informulier op desktop" loading="lazy"><figcaption>Het check-informulier op desktop</figcaption></figure><figure class="fig phone"><img src="/img/handleiding/m-checkin.jpg" alt="Dezelfde check-in op je telefoon" loading="lazy"><figcaption>Dezelfde check-in op je telefoon</figcaption></figure></div>
   <div class="tip">💡 <b>Advies:</b> weeg je op een vast moment, bijvoorbeeld elke week op dezelfde ochtend, nuchter. Dat geeft de eerlijkste lijn in je grafiek.</div>
 
   <h3>Je dashboard begrijpen</h3>
+<div class="duo"><figure class="fig"><img src="/img/handleiding/d-dashboard.jpg" alt="Het dashboard: tegels, voortgangsbalk en grafieken" loading="lazy"><figcaption>Het dashboard: tegels, voortgangsbalk en grafieken</figcaption></figure><figure class="fig phone"><img src="/img/handleiding/m-dashboard.jpg" alt="Op mobiel, met de navigatie onderin" loading="lazy"><figcaption>Op mobiel, met de navigatie onderin</figcaption></figure></div>
   <ul>
     <li><b>Tegels bovenaan:</b> je huidige gewicht (met verschil t.o.v. je start), hoeveel kilo je nog te gaan hebt, je gemiddelde energie van de laatste 14 dagen en je totaal aantal check-ins.</li>
     <li><b>Voortgangsbalk:</b> hoeveel procent je al op weg bent van startgewicht naar doelgewicht (alleen zichtbaar als je een doelgewicht hebt ingevuld).</li>
@@ -145,6 +156,7 @@
 
   <h3>Historie</h3>
   <p>Onder <span class="kbd">Historie</span> staan al je check-ins in een tabel. Een foutje gemaakt? Verwijder de check-in en vul hem opnieuw in.</p>
+<figure class="fig"><img src="/img/handleiding/d-historie.jpg" alt="De historie met al je check-ins" loading="lazy"><figcaption>De historie met al je check-ins</figcaption></figure>
 </section>
 
 <!-- ======================= COACH ======================= -->
@@ -157,10 +169,12 @@
   <div class="step"><div class="nr">3</div><div>De deelnemer opent de link, maakt zelf een account aan (eigen wachtwoord) en hangt <b>automatisch aan jou</b> als coach.</div></div>
   <p>Deze link is <b>permanent en herbruikbaar</b> — stuur hem naar zoveel mensen als je wilt. Komt de link ongewenst op straat te liggen? Klik dan op <span class="kbd">Nieuwe link genereren</span>: de oude werkt per direct niet meer (bestaande accounts blijven gewoon bestaan).</p>
 
+<figure class="fig"><img src="/img/handleiding/d-invite-modal.jpg" alt="Het uitnodigingsvenster: taalkeuze, WhatsApp-knop, kopiëren en vernieuwen" loading="lazy"><figcaption>Het uitnodigingsvenster: taalkeuze, WhatsApp-knop, kopiëren en vernieuwen</figcaption></figure>
   <h3>Deelnemers toevoegen — handmatig</h3>
   <p>Klik op <span class="kbd">+ Nieuwe deelnemer</span>, vul naam en e-mailadres in. Je krijgt een <b>tijdelijk wachtwoord</b> te zien (begint met <span class="kbd">HF-</span>) — kopieer het en deel het veilig met de deelnemer. Bij de eerste login moet diegene een eigen wachtwoord kiezen.</p>
 
   <h3>Je deelnemerslijst lezen</h3>
+<figure class="fig"><img src="/img/handleiding/d-coach-lijst.jpg" alt="De deelnemerslijst van een coach, met statusbadges" loading="lazy"><figcaption>De deelnemerslijst van een coach, met statusbadges</figcaption></figure>
   <table>
     <tr><th>Status</th><th>Betekenis</th></tr>
     <tr><td><span class="badge g">actief</span></td><td>Check-in gedaan in de afgelopen 7 dagen</td></tr>
@@ -179,6 +193,7 @@
     <li><b>Alle check-ins:</b> de volledige tabel met alle ingevulde waarden en notities.</li>
     <li><b>Reset wachtwoord:</b> is een deelnemer zijn wachtwoord kwijt en lukt de e-mail-reset niet? Genereer hier een nieuw tijdelijk wachtwoord.</li>
   </ul>
+<figure class="fig"><img src="/img/handleiding/d-coach-detail.jpg" alt="Het volledige deelnemersdossier: grafieken, intake, notities en alle check-ins" loading="lazy"><figcaption>Het volledige deelnemersdossier: grafieken, intake, notities en alle check-ins</figcaption></figure>
   <div class="tip">💡 Gebruik coachnotities voor afspraken en observaties ("wil in oktober 2 kg eraf", "knieblessure — geen hardlopen"). Zo pak je elk gesprek de draad zo weer op.</div>
 </section>
 
@@ -194,6 +209,7 @@
     <li><b>Waarschuwing "zonder coach":</b> als er deelnemers zijn zonder coach, zie je dat hier meteen.</li>
   </ul>
 
+<figure class="fig"><img src="/img/handleiding/d-admin-overzicht.jpg" alt="Het beheerdersoverzicht met statistieken en signaleringen" loading="lazy"><figcaption>Het beheerdersoverzicht met statistieken en signaleringen</figcaption></figure>
   <h3>Deelnemersbeheer</h3>
   <p>Op de pagina <span class="kbd">Deelnemers</span> zie je iedereen, van alle coaches. Per deelnemer:</p>
   <ul>
@@ -205,6 +221,7 @@
     <tr><td><b>Inactief zetten</b></td><td>Tijdelijk blokkeren. De persoon kan niet meer inloggen, maar alle gegevens blijven bewaard. Altijd omkeerbaar.</td></tr>
     <tr><td><b>Verwijderen</b></td><td>Permanent wissen, inclusief alle check-ins, intake en notities. <b>Niet terug te draaien.</b> De rode knop zit onderin het bewerkvenster.</td></tr>
   </table>
+<figure class="fig"><img src="/img/handleiding/d-admin-deelnemers.jpg" alt="Alle deelnemers, met coach-koppeling en status" loading="lazy"><figcaption>Alle deelnemers, met coach-koppeling en status</figcaption></figure><figure class="fig"><img src="/img/handleiding/d-edit-modal.jpg" alt="Het bewerkvenster: coach kiezen, status wijzigen — en onderin de verwijderknop" loading="lazy"><figcaption>Het bewerkvenster: coach kiezen, status wijzigen — en onderin de verwijderknop</figcaption></figure>
   <div class="warn">⚠️ <b>Twijfel je?</b> Kies dan voor inactief zetten. Verwijderen is definitief — er is geen prullenbak.</div>
 
   <h3>Team: coaches &amp; beheerders</h3>
@@ -215,6 +232,7 @@
     <li><b>Nieuwe beheerder:</b> <span class="kbd">+ Nieuwe beheerder</span> werkt hetzelfde. Een beheerder kan álles — geef deze rol alleen aan mensen die je volledig vertrouwt.</li>
     <li><b>Wachtwoord resetten</b> kan hier voor elke coach of beheerder.</li>
   </ul>
+<figure class="fig"><img src="/img/handleiding/d-admin-team.jpg" alt="De Team-pagina: coaches en beheerders beheren" loading="lazy"><figcaption>De Team-pagina: coaches en beheerders beheren</figcaption></figure>
   <div class="warn">⚠️ Je kunt <b>jezelf niet verwijderen of deactiveren</b> — zo kan het platform nooit zonder beheerder komen te zitten.</div>
 
   <h3>Verwijderde coach — wat gebeurt er met de deelnemers?</h3>
