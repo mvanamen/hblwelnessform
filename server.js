@@ -74,6 +74,56 @@ app.post('/api/password', requireRole('admin', 'coach', 'member'), (req, res) =>
   res.json({ ok: true });
 });
 
+// ---------- Uitnodigingslinks & registratie ----------
+
+function ensureInviteToken(userId) {
+  const row = db.prepare('SELECT invite_token FROM users WHERE id = ?').get(userId);
+  if (row.invite_token) return row.invite_token;
+  const token = crypto.randomBytes(16).toString('hex');
+  db.prepare('UPDATE users SET invite_token = ? WHERE id = ?').run(token, userId);
+  return token;
+}
+
+app.post('/api/coach/invite-link', requireRole('coach'), (req, res) => {
+  res.json({ token: ensureInviteToken(req.user.id) });
+});
+
+app.post('/api/coach/invite-link/regenerate', requireRole('coach'), (req, res) => {
+  db.prepare('UPDATE users SET invite_token = NULL WHERE id = ?').run(req.user.id);
+  res.json({ token: ensureInviteToken(req.user.id) });
+});
+
+const inviterByToken = (token) => (!token || !/^[a-f0-9]{32}$/.test(token)) ? null :
+  db.prepare(`SELECT id, name, role FROM users WHERE invite_token = ? AND active = 1 AND role IN ('coach','admin')`).get(token);
+
+app.get('/api/invite/:token', (req, res) => {
+  const inviter = inviterByToken(req.params.token);
+  if (!inviter) return res.status(404).json({ error: 'invalid_invite' });
+  res.json({ coach: inviter.name });
+});
+
+app.post('/api/register', (req, res) => {
+  const { token, name, email, password } = req.body || {};
+  const inviter = inviterByToken(token);
+  if (!inviter) return res.status(404).json({ error: 'invalid_invite' });
+  const pw = String(password || '').trim();
+  if (pw.length < 8) return res.status(400).json({ error: 'password_too_short' });
+  const cleanName = String(name || '').trim();
+  const cleanEmail = String(email || '').trim();
+  if (!cleanName || !cleanEmail.includes('@')) return res.status(400).json({ error: 'name_email_required' });
+  try {
+    const info = db.prepare(`
+      INSERT INTO users (role, name, email, password_hash, coach_id, must_change_password)
+      VALUES ('member', ?, ?, ?, ?, 0)
+    `).run(cleanName, cleanEmail, bcrypt.hashSync(pw, 10), inviter.role === 'coach' ? inviter.id : null);
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
+    createSession(res, user.id);
+    res.json({ user: publicUser(user) });
+  } catch (e) {
+    res.status(400).json({ error: 'email_in_use' });
+  }
+});
+
 // ---------- Deelnemer ----------
 
 app.get('/api/member/dashboard', requireRole('member'), (req, res) => {

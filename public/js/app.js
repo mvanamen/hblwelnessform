@@ -142,6 +142,20 @@
       'set.title': 'Instellingen', 'set.display': 'Weergave', 'set.lang': 'Taal',
       'lang.nl': 'Nederlands', 'lang.en': 'Engels',
       'you': 'jij',
+      'inv.btn': 'Uitnodigingslink', 'inv.title': 'Jouw uitnodigingslink',
+      'inv.sub': 'Deel deze link via WhatsApp of e-mail. Wie de link opent maakt zelf een account aan en wordt automatisch aan jou gekoppeld.',
+      'inv.sub.admin': 'Deel deze link via WhatsApp of e-mail. Wie de link opent maakt zelf een account aan (nog zonder coach — koppel daarna een coach via Deelnemers).',
+      'inv.copy': 'Kopieer link', 'inv.regen': 'Nieuwe link genereren',
+      'inv.regen.title': 'Nieuwe link genereren?',
+      'inv.regen.text': 'De oude link werkt daarna niet meer. Al aangemaakte accounts blijven gewoon bestaan.',
+      'inv.regen.btn': 'Genereer nieuwe link',
+      'reg.title': 'Account aanmaken',
+      'reg.invited': 'Je bent uitgenodigd door {name}.',
+      'reg.submit': 'Account aanmaken',
+      'reg.welcome': 'Welkom bij HerbaForms 🎉',
+      'reg.invalid': 'Deze uitnodigingslink is niet (meer) geldig. Vraag je coach om een nieuwe link.',
+      'reg.haslogin': 'Al een account?', 'reg.tologin': 'Inloggen',
+      'err.invalid_invite': 'Deze uitnodigingslink is ongeldig of verlopen',
       'err.missing_credentials': 'Vul e-mail en wachtwoord in',
       'err.invalid_credentials': 'Onjuiste inloggegevens',
       'err.not_logged_in': 'Je bent niet (meer) ingelogd',
@@ -290,6 +304,20 @@
       'set.title': 'Settings', 'set.display': 'Appearance', 'set.lang': 'Language',
       'lang.nl': 'Dutch', 'lang.en': 'English',
       'you': 'you',
+      'inv.btn': 'Invite link', 'inv.title': 'Your invite link',
+      'inv.sub': 'Share this link via WhatsApp or email. Anyone who opens it creates their own account and is automatically linked to you.',
+      'inv.sub.admin': 'Share this link via WhatsApp or email. Anyone who opens it creates their own account (without a coach — assign one afterwards via Members).',
+      'inv.copy': 'Copy link', 'inv.regen': 'Generate new link',
+      'inv.regen.title': 'Generate a new link?',
+      'inv.regen.text': 'The old link will stop working. Accounts that were already created remain untouched.',
+      'inv.regen.btn': 'Generate new link',
+      'reg.title': 'Create account',
+      'reg.invited': 'You have been invited by {name}.',
+      'reg.submit': 'Create account',
+      'reg.welcome': 'Welcome to HerbaForms 🎉',
+      'reg.invalid': 'This invite link is no longer valid. Ask your coach for a new link.',
+      'reg.haslogin': 'Already have an account?', 'reg.tologin': 'Sign in',
+      'err.invalid_invite': 'This invite link is invalid or expired',
       'err.missing_credentials': 'Please enter email and password',
       'err.invalid_credentials': 'Incorrect email or password',
       'err.not_logged_in': 'You are not signed in (anymore)',
@@ -671,6 +699,97 @@
     };
   }
 
+  async function registerView(token) {
+    $app.innerHTML = `<div class="login-wrap"><div class="login-card"><div class="skeleton">${t('loading')}</div></div></div>`;
+    let coach;
+    try { ({ coach } = await api('/invite/' + token)); }
+    catch {
+      $app.innerHTML = `
+        <div class="login-wrap">
+          <div class="login-card">
+            <div class="login-brand">
+              <div class="logo-mark">${I.leaf}</div>
+              <h1>Herba<span style="color:var(--brand)">Forms</span></h1>
+            </div>
+            <div class="form-error">${t('reg.invalid')}</div>
+            <a class="btn ghost" href="#/login" style="text-align:center">${t('reg.tologin')}</a>
+          </div>
+        </div>`;
+      return;
+    }
+    const render = (err = '') => {
+      $app.innerHTML = `
+        <div class="login-wrap">
+          <div style="display:flex;flex-direction:column;gap:14px;width:min(410px,100%)">
+          <div class="login-card">
+            <div class="login-brand">
+              <div class="logo-mark">${I.leaf}</div>
+              <h1>${t('reg.title')}</h1>
+              <p>${t('reg.invited', { name: `<b>${esc(coach)}</b>` })}</p>
+            </div>
+            ${err ? `<div class="form-error">${esc(err)}</div>` : ''}
+            <form id="reg-form" style="display:flex;flex-direction:column;gap:14px">
+              <div class="field"><label>${t('modal.name')}</label>
+                <input class="input" name="name" required autocomplete="name" placeholder="${t('modal.name.ph')}"></div>
+              <div class="field"><label>${t('login.email')}</label>
+                <input class="input" name="email" type="email" required autocomplete="email" placeholder="${t('login.placeholder.email')}"></div>
+              <div class="field"><label>${t('login.password')}</label>
+                <input class="input" name="password" type="password" required minlength="8" autocomplete="new-password">
+                <span class="hint">${t('force.hint')}</span></div>
+              <button class="btn big" type="submit">${t('reg.submit')}</button>
+            </form>
+            <p style="text-align:center;font-size:13.5px;color:var(--ink-2)">${t('reg.haslogin')}
+              <a href="#/login">${t('reg.tologin')}</a></p>
+          </div>
+          ${langToggleHTML()}
+          </div>
+        </div>`;
+      bindLangToggle($app);
+      document.getElementById('reg-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const f = new FormData(e.target);
+        try {
+          const { user } = await api('/register', { method: 'POST', body: {
+            token, name: f.get('name'), email: f.get('email'), password: String(f.get('password')),
+          }});
+          state.user = user;
+          toast(t('reg.welcome'));
+          location.hash = '#/';
+        } catch (err) { render(err.message); }
+      };
+    };
+    render();
+  }
+
+  function inviteLinkModal() {
+    const isAdmin = state.user.role === 'admin';
+    api('/coach/invite-link', { method: 'POST' }).then(({ token }) => {
+      const link = () => `${location.origin}/#/join/${token}`;
+      const m = modal(`
+        <h3>${t('inv.title')}</h3>
+        <p style="color:var(--ink-2);font-size:14px">${isAdmin ? t('inv.sub.admin') : t('inv.sub')}</p>
+        <div class="password-reveal" style="word-break:break-all"><code style="font-size:14px" data-link></code></div>
+        <div class="modal-actions" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <button class="btn ghost" data-regen>${t('inv.regen')}</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn ghost" data-x>${t('btn.done')}</button>
+            <button class="btn" data-copy>${t('inv.copy')}</button>
+          </div>
+        </div>`);
+      m.querySelector('[data-link]').textContent = link();
+      m.querySelector('[data-copy]').onclick = () => copyText(link());
+      m.querySelector('[data-x]').onclick = closeModal;
+      m.querySelector('[data-regen]').onclick = async () => {
+        if (!await confirmModal(t('inv.regen.title'), t('inv.regen.text'), t('inv.regen.btn'))) return;
+        try {
+          const res = await api('/coach/invite-link/regenerate', { method: 'POST' });
+          token = res.token;
+          inviteLinkModal();
+        } catch (err) { toast(err.message, true); }
+      };
+    }).catch((err) => toast(err.message, true));
+  }
+
   // ---------- Deelnemer ----------
 
   async function memberHome() {
@@ -1002,7 +1121,10 @@
       root.innerHTML = `
         <div class="page-head"><div><h1>${t('co.title')}</h1>
           <p class="sub">${t('co.sub', { n: members.length })}</p></div>
-          <button class="btn" data-new>${t('co.new')}</button></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn ghost" data-invite>${t('inv.btn')}</button>
+            <button class="btn" data-new>${t('co.new')}</button>
+          </div></div>
         <div class="card">
           <input class="input" data-search placeholder="${t('co.search')}" value="${esc(filter)}" style="margin-bottom:14px">
           ${list.length ? `<div class="table-wrap"><table class="table">
@@ -1027,6 +1149,7 @@
         location.hash = '#/deelnemer/' + tr.dataset.open;
       });
       root.querySelector('[data-new]').onclick = () => newMemberModal();
+      root.querySelector('[data-invite]').onclick = inviteLinkModal;
     };
     render();
   }
@@ -1247,7 +1370,10 @@
       root.innerHTML = `
         <div class="page-head"><div><h1>${t('ad.members.title')}</h1>
           <p class="sub">${t('ad.members.sub', { n: u.members.length })}</p></div>
-          <button class="btn" data-new>${t('co.new')}</button></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn ghost" data-invite>${t('inv.btn')}</button>
+            <button class="btn" data-new>${t('co.new')}</button>
+          </div></div>
         <div class="card">
           <input class="input" data-search placeholder="${t('ad.members.search')}" value="${esc(filter)}" style="margin-bottom:14px">
           ${list.length ? `<div class="table-wrap"><table class="table">
@@ -1270,6 +1396,7 @@
       search.oninput = () => { const v = search.value; render(v);
         const s = root.querySelector('[data-search]'); s.focus(); s.setSelectionRange(v.length, v.length); };
       root.querySelector('[data-new]').onclick = () => newMemberModal(u.coaches, adminMembersView);
+      root.querySelector('[data-invite]').onclick = inviteLinkModal;
       root.querySelectorAll('[data-edit]').forEach((b) => b.onclick = () => {
         const m = u.members.find((x) => x.id == b.dataset.edit);
         editUserModal(m, 'member', u.coaches, adminMembersView);
@@ -1421,6 +1548,11 @@
 
   async function route() {
     closeModal();
+    const join = (location.hash || '').match(/^#\/join\/([a-f0-9]{32})$/i);
+    if (join) {
+      if (state.user) { location.hash = '#/'; return; }
+      return registerView(join[1]);
+    }
     if (!state.user) { loginView(); return; }
     if (state.user.must_change_password) { forcePasswordView(); return; }
 

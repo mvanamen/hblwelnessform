@@ -68,7 +68,12 @@ CREATE INDEX IF NOT EXISTS idx_checkins_user ON checkins(user_id, date);
 CREATE INDEX IF NOT EXISTS idx_users_coach ON users(coach_id);
 `);
 
-// Migraties: voeg intake-kolommen toe als ze nog niet bestaan (idempotent).
+// Migraties (idempotent).
+const userCols = new Set(db.prepare(`PRAGMA table_info(users)`).all().map((c) => c.name));
+if (!userCols.has('invite_token')) db.exec(`ALTER TABLE users ADD COLUMN invite_token TEXT`);
+db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_invite ON users(invite_token)`);
+
+// Voeg intake-kolommen toe als ze nog niet bestaan.
 const profileCols = new Set(db.prepare(`PRAGMA table_info(profiles)`).all().map((c) => c.name));
 const addCol = (name, type) => {
   if (!profileCols.has(name)) db.exec(`ALTER TABLE profiles ADD COLUMN ${name} ${type}`);
