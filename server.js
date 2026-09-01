@@ -74,6 +74,12 @@ app.post('/api/password', requireRole('admin', 'coach', 'member'), (req, res) =>
   res.json({ ok: true });
 });
 
+app.post('/api/language', requireRole('admin', 'coach', 'member'), (req, res) => {
+  const lang = req.body?.lang === 'en' ? 'en' : 'nl';
+  db.prepare('UPDATE users SET lang = ? WHERE id = ?').run(lang, req.user.id);
+  res.json({ ok: true });
+});
+
 // ---------- Wachtwoord vergeten ----------
 
 const { sendMail, resetEmailHTML } = require('./src/mail');
@@ -92,7 +98,6 @@ function forgotAllowed(key) {
 
 app.post('/api/forgot', async (req, res) => {
   const email = String(req.body?.email || '').trim();
-  const lang = req.body?.lang === 'en' ? 'en' : 'nl';
   // Altijd hetzelfde antwoord — verraad niet of een e-mailadres bestaat.
   res.json({ ok: true });
   if (!email.includes('@')) return;
@@ -100,6 +105,9 @@ app.post('/api/forgot', async (req, res) => {
   if (!forgotAllowed(email.toLowerCase()) || !forgotAllowed('ip:' + ip)) return;
   const user = db.prepare('SELECT * FROM users WHERE email = ? AND active = 1').get(email);
   if (!user) return;
+  const lang = req.body?.lang === 'en' || req.body?.lang === 'nl'
+    ? req.body.lang
+    : (user.lang === 'en' ? 'en' : 'nl');
   const token = crypto.randomBytes(32).toString('hex');
   db.prepare('DELETE FROM password_resets WHERE user_id = ?').run(user.id);
   db.prepare('INSERT INTO password_resets (token_hash, user_id, expires_at) VALUES (?, ?, ?)')
@@ -193,9 +201,10 @@ app.post('/api/register', (req, res) => {
   if (!cleanName || !cleanEmail.includes('@')) return res.status(400).json({ error: 'name_email_required' });
   try {
     const info = db.prepare(`
-      INSERT INTO users (role, name, email, password_hash, coach_id, must_change_password)
-      VALUES ('member', ?, ?, ?, ?, 0)
-    `).run(cleanName, cleanEmail, bcrypt.hashSync(pw, 10), inviter.id);
+      INSERT INTO users (role, name, email, password_hash, coach_id, must_change_password, lang)
+      VALUES ('member', ?, ?, ?, ?, 0, ?)
+    `).run(cleanName, cleanEmail, bcrypt.hashSync(pw, 10), inviter.id,
+           req.body?.lang === 'en' ? 'en' : 'nl');
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
     createSession(res, user.id);
     res.json({ user: publicUser(user) });
@@ -213,9 +222,10 @@ function registerCoach(req, res, invite) {
   if (!cleanName || !cleanEmail.includes('@')) return res.status(400).json({ error: 'name_email_required' });
   try {
     const info = db.prepare(`
-      INSERT INTO users (role, name, email, password_hash, must_change_password)
-      VALUES ('coach', ?, ?, ?, 0)
-    `).run(cleanName, cleanEmail, bcrypt.hashSync(pw, 10));
+      INSERT INTO users (role, name, email, password_hash, must_change_password, lang)
+      VALUES ('coach', ?, ?, ?, 0, ?)
+    `).run(cleanName, cleanEmail, bcrypt.hashSync(pw, 10),
+           req.body?.lang === 'en' ? 'en' : 'nl');
     db.prepare(`UPDATE coach_invites SET used_by = ?, used_at = datetime('now') WHERE token = ?`)
       .run(info.lastInsertRowid, invite.token);
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);

@@ -158,7 +158,7 @@
       'inv.sub': 'Deel deze link via WhatsApp of e-mail. Wie de link opent maakt zelf een account aan en wordt automatisch aan jou gekoppeld.',
       'inv.sub.admin': 'Deel deze link via WhatsApp of e-mail. Wie de link opent maakt zelf een account aan (nog zonder coach — koppel daarna een coach via Deelnemers).',
       'inv.copy': 'Kopieer link', 'inv.regen': 'Nieuwe link genereren',
-      'inv.wa': 'Delen via WhatsApp',
+      'inv.wa': 'Delen via WhatsApp', 'inv.msglang': 'Taal van het bericht:',
       'inv.coach.btn': 'Uitnodigingslink',
       'inv.coach.title': 'Uitnodigingslink voor nieuwe coach',
       'inv.coach.sub': 'Deel deze link met de nieuwe coach. Let op: de link is eenmalig geldig \u2014 zodra er een account mee is aangemaakt werkt hij niet meer. Voor iedere nieuwe coach genereer je een nieuwe link.',
@@ -348,7 +348,7 @@
       'inv.sub': 'Share this link via WhatsApp or email. Anyone who opens it creates their own account and is automatically linked to you.',
       'inv.sub.admin': 'Share this link via WhatsApp or email. Anyone who opens it creates their own account (without a coach — assign one afterwards via Members).',
       'inv.copy': 'Copy link', 'inv.regen': 'Generate new link',
-      'inv.wa': 'Share via WhatsApp',
+      'inv.wa': 'Share via WhatsApp', 'inv.msglang': 'Message language:',
       'inv.coach.btn': 'Invite link',
       'inv.coach.title': 'Invite link for a new coach',
       'inv.coach.sub': 'Share this link with the new coach. Note: the link is valid once \u2014 as soon as an account has been created with it, it stops working. Generate a new link for every new coach.',
@@ -402,10 +402,18 @@
   }
   const tErr = (raw) => STR[LANG]['err.' + raw] ? t('err.' + raw) : (STR.nl['err.' + raw] ? t('err.' + raw) : (raw && raw.length < 80 && !raw.includes('_') ? raw : t('err.generic')));
 
+  const tIn = (lang, key, vars) => {
+    let str = STR[lang === 'en' ? 'en' : 'nl'][key] ?? STR.nl[key] ?? key;
+    if (vars) for (const k in vars) str = str.replaceAll(`{${k}}`, vars[k]);
+    return str;
+  };
+
   function setLang(l) {
     LANG = l === 'en' ? 'en' : 'nl';
     localStorage.setItem('hf-lang', LANG);
     document.documentElement.lang = LANG;
+    // voorkeur ook op de server bewaren, zodat e-mails in de juiste taal komen
+    if (state.user) api('/language', { method: 'POST', body: { lang: LANG } }).catch(() => {});
     route();
   }
 
@@ -889,7 +897,7 @@
         const f = new FormData(e.target);
         try {
           const { user } = await api('/register', { method: 'POST', body: {
-            token, name: f.get('name'), email: f.get('email'), password: String(f.get('password')),
+            token, name: f.get('name'), email: f.get('email'), password: String(f.get('password')), lang: LANG,
           }});
           state.user = user;
           toast(t('reg.welcome'));
@@ -910,7 +918,7 @@
         <h3>${t('inv.title')}</h3>
         <p style="color:var(--ink-2);font-size:14px">${t('inv.sub')}</p>
         <div class="password-reveal" style="word-break:break-all"><code style="font-size:14px" data-link></code></div>
-        <a class="btn accent" data-wa target="_blank" rel="noopener" style="justify-content:center">${I.wa} ${t('inv.wa')}</a>
+        ${waShareHTML()}
         <div class="modal-actions" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
           <button class="btn ghost" data-regen>${t('inv.regen')}</button>
           <div style="display:flex;gap:8px">
@@ -919,7 +927,7 @@
           </div>
         </div>`);
       m.querySelector('[data-link]').textContent = link();
-      m.querySelector('[data-wa]').href = 'https://wa.me/?text=' + encodeURIComponent(t('wa.member') + link());
+      bindWaShare(m, link, 'wa.member');
       m.querySelector('[data-copy]').onclick = () => copyText(link());
       m.querySelector('[data-x]').onclick = closeModal;
       m.querySelector('[data-regen]').onclick = async () => {
@@ -933,6 +941,25 @@
     }).catch((err) => toast(err.message, true));
   }
 
+  function bindWaShare(m, link, msgKey) {
+    let msgLang = LANG;
+    const update = () => {
+      m.querySelector('[data-wa]').href = 'https://wa.me/?text=' + encodeURIComponent(tIn(msgLang, msgKey) + link());
+      m.querySelectorAll('[data-ml]').forEach((b) => b.classList.toggle('on', b.dataset.ml === msgLang));
+    };
+    m.querySelectorAll('[data-ml]').forEach((b) => b.onclick = () => { msgLang = b.dataset.ml; update(); });
+    update();
+  }
+  const waShareHTML = () => `
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-size:13px;color:var(--ink-2);font-weight:600">${t('inv.msglang')}</span>
+      <div class="section-tabs">
+        <button data-ml="nl">\ud83c\uddf3\ud83c\uddf1 NL</button>
+        <button data-ml="en">\ud83c\uddec\ud83c\udde7 EN</button>
+      </div>
+    </div>
+    <a class="btn accent" data-wa target="_blank" rel="noopener" style="justify-content:center">${I.wa} ${t('inv.wa')}</a>`;
+
   function coachInviteModal() {
     api('/admin/coach-invite', { method: 'POST' }).then(({ token }) => {
       const link = `${location.origin}/#/join/${token}`;
@@ -940,13 +967,13 @@
         <h3>${t('inv.coach.title')}</h3>
         <p style="color:var(--ink-2);font-size:14px">${t('inv.coach.sub')}</p>
         <div class="password-reveal" style="word-break:break-all"><code style="font-size:14px" data-link></code></div>
-        <a class="btn accent" data-wa target="_blank" rel="noopener" style="justify-content:center">${I.wa} ${t('inv.wa')}</a>
+        ${waShareHTML()}
         <div class="modal-actions">
           <button class="btn ghost" data-x>${t('btn.done')}</button>
           <button class="btn" data-copy>${t('inv.copy')}</button>
         </div>`);
       m.querySelector('[data-link]').textContent = link;
-      m.querySelector('[data-wa]').href = 'https://wa.me/?text=' + encodeURIComponent(t('wa.coach') + link);
+      bindWaShare(m, () => link, 'wa.coach');
       m.querySelector('[data-copy]').onclick = () => copyText(link);
       m.querySelector('[data-x]').onclick = closeModal;
     }).catch((err) => toast(err.message, true));
