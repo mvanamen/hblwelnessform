@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Handleiding — HerbaForms</title>
+<meta name="description" content="Complete handleiding voor deelnemers, coaches en beheerders van HerbaForms.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23166534'/%3E%3Cpath d='M16 25c-5-2-8-6-8-11 0-3 2-6 5-7 4-1 8 1 10 5-3-1-6 0-8 2s-3 5-2 8c.8 1.6 2 2.6 3 3z' fill='%23a3e635'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --page: #f3f4ee; --surface: #fcfcf9; --hairline: #e3e5db;
+    --ink: #191c18; --ink-2: #565b53; --ink-3: #8a8f85;
+    --brand: #166534; --brand-deep: #0e4023; --brand-tint: #e6efe3;
+    --accent: #65a30d; --accent-soft: #ecf5dc;
+    --warn-soft: #f7efd9; --warn-text: #7a5b10;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink);
+    font: 16px/1.65 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header.hero { background: linear-gradient(135deg, var(--brand-deep), #14532d); color: #eaf3e6; padding: 48px 20px 42px; text-align: center; }
+  .hero .mark { width: 56px; height: 56px; border-radius: 16px; background: var(--accent); display: inline-grid; place-items: center; font-size: 28px; }
+  .hero h1 { margin: 16px 0 6px; font-size: clamp(26px, 5vw, 36px); letter-spacing: -0.02em; color: #fff; }
+  .hero h1 span { color: #a3e635; }
+  .hero p { margin: 0 auto; max-width: 540px; color: #c8dcc4; }
+  .hero .url { display: inline-block; margin-top: 14px; background: rgba(255,255,255,.12); padding: 7px 16px; border-radius: 999px; color: #d9f99d; font-weight: 650; font-size: 14.5px; }
+  main { max-width: 780px; margin: 0 auto; padding: 28px 20px 80px; }
+  .toc { background: var(--surface); border: 1px solid rgba(20,24,18,.08); border-radius: 16px; padding: 22px 26px; margin-bottom: 30px; }
+  .toc b { font-size: 14px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); }
+  .toc ol { margin: 10px 0 0; padding-left: 22px; }
+  .toc a { color: var(--brand); text-decoration: none; font-weight: 600; }
+  .toc a:hover { text-decoration: underline; }
+  section { background: var(--surface); border: 1px solid rgba(20,24,18,.08); border-radius: 16px; padding: 26px 30px; margin-bottom: 22px; }
+  h2 { font-size: 22px; letter-spacing: -0.015em; margin: 0 0 4px; }
+  h2 .chip { display: inline-block; vertical-align: 4px; margin-left: 8px; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; background: var(--brand-tint); color: var(--brand); border-radius: 999px; padding: 3px 10px; }
+  h3 { font-size: 16.5px; margin: 26px 0 6px; }
+  h3::before { content: "— "; color: var(--accent); }
+  p, li { color: var(--ink-2); font-size: 15.5px; }
+  li { margin-bottom: 5px; }
+  b, strong { color: var(--ink); }
+  .step { display: flex; gap: 14px; margin: 14px 0; }
+  .step .nr { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--brand); color: #fff; display: grid; place-items: center; font-weight: 750; font-size: 14px; margin-top: 2px; }
+  .tip { background: var(--accent-soft); border-left: 4px solid var(--accent); border-radius: 0 10px 10px 0; padding: 12px 16px; margin: 14px 0; font-size: 14.5px; color: var(--ink-2); }
+  .warn { background: var(--warn-soft); border-left: 4px solid var(--warn-text); border-radius: 0 10px 10px 0; padding: 12px 16px; margin: 14px 0; font-size: 14.5px; color: var(--ink-2); }
+  .kbd { background: var(--brand-tint); color: var(--brand); border-radius: 7px; padding: 2px 9px; font-weight: 650; font-size: 14px; white-space: nowrap; }
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; margin: 12px 0; }
+  th { text-align: left; color: var(--ink-3); font-size: 12.5px; text-transform: uppercase; letter-spacing: .04em; padding: 6px 10px; border-bottom: 1px solid var(--hairline); }
+  td { padding: 9px 10px; border-bottom: 1px solid var(--hairline); color: var(--ink-2); vertical-align: top; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 650; }
+  .badge.g { background: #e0f2e0; color: #1d6b1d; } .badge.w { background: var(--warn-soft); color: var(--warn-text); } .badge.r { background: #f8e7e7; color: #c23434; }
+  footer { text-align: center; color: var(--ink-3); font-size: 13.5px; padding: 10px 20px 40px; }
+  a.top { color: var(--brand); text-decoration: none; font-size: 13.5px; font-weight: 600; }
+  @media print {
+    header.hero { background: var(--brand-deep) !important; -webkit-print-color-adjust: exact; }
+    section { break-inside: avoid-page; border: 1px solid #ddd; }
+    .toc, .top { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="mark">🌿</div>
+  <h1>Herba<span>Forms</span> — Handleiding</h1>
+  <p>Alles wat je moet weten als deelnemer, coach of beheerder. Werkt op telefoon, tablet en computer.</p>
+  <span class="url">hblwellnessform.com</span>
+</header>
+
+<main>
+
+<div class="toc">
+  <b>Inhoud</b>
+  <ol>
+    <li><a href="#algemeen">Algemeen: inloggen, taal &amp; thema</a></li>
+    <li><a href="#deelnemer">Voor deelnemers</a></li>
+    <li><a href="#coach">Voor coaches</a></li>
+    <li><a href="#admin">Voor de hoofdbeheerder</a></li>
+    <li><a href="#faq">Veelgestelde vragen</a></li>
+  </ol>
+</div>
+
+<!-- ======================= ALGEMEEN ======================= -->
+<section id="algemeen">
+  <h2>1. Algemeen</h2>
+
+  <h3>De app openen</h3>
+  <p>Ga naar <b>hblwellnessform.com</b> in je browser — op je telefoon, tablet of computer. Er is niets te installeren.</p>
+  <div class="tip">📱 <b>Tip voor mobiel:</b> zet de site op je beginscherm (in Safari of Chrome: <i>Delen → Zet op beginscherm</i>). Dan opent hij als een echte app.</div>
+
+  <h3>Inloggen</h3>
+  <p>Log in met je e-mailadres en wachtwoord. Kreeg je van je coach een <b>tijdelijk wachtwoord</b> (begint met <span class="kbd">HF-</span>)? Dan vraagt de app bij je eerste login om direct een eigen wachtwoord te kiezen (minimaal 8 tekens).</p>
+
+  <h3>Wachtwoord vergeten</h3>
+  <div class="step"><div class="nr">1</div><div>Klik op het loginscherm op <span class="kbd">Wachtwoord vergeten?</span></div></div>
+  <div class="step"><div class="nr">2</div><div>Vul je e-mailadres in — je ontvangt binnen een minuut een e-mail van <b>no-reply@hblwellnessform.com</b> (check ook je spamfolder).</div></div>
+  <div class="step"><div class="nr">3</div><div>Klik op de knop in de mail en kies een nieuw wachtwoord. De link is <b>1 uur geldig</b> en werkt maar één keer.</div></div>
+
+  <h3>Taal &amp; thema</h3>
+  <p>De app is er in het <b>Nederlands en Engels</b>. Wisselen kan op het loginscherm (knoppen onder het formulier), via het <span class="kbd">NL/EN</span>-knopje in de zijbalk, of bij <span class="kbd">Instellingen</span>. Je keuze wordt onthouden — ook e-mails komen dan in jouw taal. Met het maantje-knopje wissel je tussen licht en donker thema.</p>
+</section>
+
+<!-- ======================= DEELNEMER ======================= -->
+<section id="deelnemer">
+  <h2>2. Voor deelnemers <span class="chip">Deelnemer</span></h2>
+
+  <h3>Een account krijgen</h3>
+  <p>Dat kan op twee manieren:</p>
+  <ul>
+    <li><b>Via een uitnodigingslink</b> van je coach (meestal via WhatsApp). Open de link, vul je naam, e-mailadres en een zelfgekozen wachtwoord in — en je bent direct ingelogd.</li>
+    <li><b>Via je coach persoonlijk:</b> die maakt een account voor je aan en geeft je een tijdelijk wachtwoord. Bij je eerste login kies je een eigen wachtwoord.</li>
+  </ul>
+
+  <h3>Stap 1: vul je profiel in (intake)</h3>
+  <p>Na je eerste login vraagt de app om je <b>profiel compleet te maken</b>. Dit is het intakeformulier waarmee je coach jou goed kan begeleiden. Het bestaat uit vijf onderdelen:</p>
+  <table>
+    <tr><th>Onderdeel</th><th>Wat vul je in</th></tr>
+    <tr><td><b>Persoonlijke gegevens</b></td><td>Naam, Facebooknaam (geen Facebook? typ "none"), telefoon, WhatsApp, geslacht, geboortedatum</td></tr>
+    <tr><td><b>Adres</b></td><td>Straat + huisnummer (geen postbus), postcode, woonplaats, land</td></tr>
+    <tr><td><b>Metingen</b></td><td>Lengte, gewicht, taille in cm, en je energieniveau van dit moment (1–10)</td></tr>
+    <tr><td><b>Jouw doel</b></td><td>Gezondheid, aankomen of afvallen + je verhaal: waarom, en wat je eerder hebt geprobeerd. Optioneel: een doelgewicht — dan zie je op je dashboard een voortgangsbalk</td></tr>
+    <tr><td><b>Gewoonten</b></td><td>Maaltijden, snacken, buitenshuis eten, water, wat je verder drinkt, wanneer je moe/hongerig bent, medicatie</td></tr>
+  </table>
+  <p>Velden met een <b>*</b> zijn verplicht. Je kunt je profiel later altijd bijwerken via <span class="kbd">Profiel</span>.</p>
+
+  <h3>Stap 2: doe regelmatig een check-in</h3>
+  <p>De check-in is het hart van de app: zo zien jij en je coach je voortgang. Klik op <span class="kbd">+ Nieuwe check-in</span> en vul in:</p>
+  <ul>
+    <li><b>Datum</b> (verplicht) — standaard vandaag. Eén check-in per dag; vul je dezelfde dag nog eens in, dan wordt de eerdere overschreven.</li>
+    <li><b>Gewicht</b> in kg</li>
+    <li><b>Energie</b>: 1 (uitgeput) t/m 10 (bruisend)</li>
+    <li><b>Stemming</b>: kies een smiley</li>
+    <li><b>Slaap</b> (uren) en <b>water</b> (liters)</li>
+    <li><b>Notities</b>: bijzonderheden voor jezelf en je coach</li>
+  </ul>
+  <p>Alleen de datum is verplicht — de rest mag je leeg laten. Maar: hoe meer je invult, hoe meer je grafieken je vertellen.</p>
+  <div class="tip">💡 <b>Advies:</b> weeg je op een vast moment, bijvoorbeeld elke week op dezelfde ochtend, nuchter. Dat geeft de eerlijkste lijn in je grafiek.</div>
+
+  <h3>Je dashboard begrijpen</h3>
+  <ul>
+    <li><b>Tegels bovenaan:</b> je huidige gewicht (met verschil t.o.v. je start), hoeveel kilo je nog te gaan hebt, je gemiddelde energie van de laatste 14 dagen en je totaal aantal check-ins.</li>
+    <li><b>Voortgangsbalk:</b> hoeveel procent je al op weg bent van startgewicht naar doelgewicht (alleen zichtbaar als je een doelgewicht hebt ingevuld).</li>
+    <li><b>Gewichtsgrafiek:</b> je gewicht door de tijd, met een lijn voor je doel. Beweeg met je vinger of muis over de grafiek voor de exacte waarde per datum.</li>
+    <li><b>Energiegrafiek:</b> je energiescores door de tijd.</li>
+    <li><b>Jouw coach:</b> naam en e-mailadres van je coach, voor als je vragen hebt.</li>
+  </ul>
+
+  <h3>Historie</h3>
+  <p>Onder <span class="kbd">Historie</span> staan al je check-ins in een tabel. Een foutje gemaakt? Verwijder de check-in en vul hem opnieuw in.</p>
+</section>
+
+<!-- ======================= COACH ======================= -->
+<section id="coach">
+  <h2>3. Voor coaches <span class="chip">Coach</span></h2>
+
+  <h3>Deelnemers toevoegen — via je uitnodigingslink (aanrader)</h3>
+  <div class="step"><div class="nr">1</div><div>Klik op je deelnemerspagina op <span class="kbd">Uitnodigingslink</span>.</div></div>
+  <div class="step"><div class="nr">2</div><div>Kies de <b>taal van het bericht</b> (NL of EN) en klik op <span class="kbd">Delen via WhatsApp</span> — er opent een kant-en-klaar berichtje met jouw link. Of gebruik <span class="kbd">Kopieer link</span> om hem ergens anders te plakken.</div></div>
+  <div class="step"><div class="nr">3</div><div>De deelnemer opent de link, maakt zelf een account aan (eigen wachtwoord) en hangt <b>automatisch aan jou</b> als coach.</div></div>
+  <p>Deze link is <b>permanent en herbruikbaar</b> — stuur hem naar zoveel mensen als je wilt. Komt de link ongewenst op straat te liggen? Klik dan op <span class="kbd">Nieuwe link genereren</span>: de oude werkt per direct niet meer (bestaande accounts blijven gewoon bestaan).</p>
+
+  <h3>Deelnemers toevoegen — handmatig</h3>
+  <p>Klik op <span class="kbd">+ Nieuwe deelnemer</span>, vul naam en e-mailadres in. Je krijgt een <b>tijdelijk wachtwoord</b> te zien (begint met <span class="kbd">HF-</span>) — kopieer het en deel het veilig met de deelnemer. Bij de eerste login moet diegene een eigen wachtwoord kiezen.</p>
+
+  <h3>Je deelnemerslijst lezen</h3>
+  <table>
+    <tr><th>Status</th><th>Betekenis</th></tr>
+    <tr><td><span class="badge g">actief</span></td><td>Check-in gedaan in de afgelopen 7 dagen</td></tr>
+    <tr><td><span class="badge w">8 dgn stil</span></td><td>Tussen 8 en 14 dagen geen check-in — misschien even een berichtje sturen?</td></tr>
+    <tr><td><span class="badge r">21 dgn stil</span></td><td>Meer dan 14 dagen niets — tijd voor contact</td></tr>
+    <tr><td><span class="badge r">inactief</span></td><td>Account is geblokkeerd door een beheerder</td></tr>
+  </table>
+  <p>Gebruik de zoekbalk om snel iemand te vinden. Klik op een rij om het volledige dossier te openen.</p>
+
+  <h3>Het deelnemersdossier</h3>
+  <p>Per deelnemer zie je precies wat de deelnemer zelf ziet, plus extra's:</p>
+  <ul>
+    <li><b>Tegels &amp; grafieken:</b> huidig gewicht, doelgewicht, energie en de gewicht/energie-grafieken.</li>
+    <li><b>Intake:</b> het complete intakeformulier, netjes per onderdeel.</li>
+    <li><b>Coachnotities:</b> jouw aantekeningen over deze deelnemer. <b>Alleen coaches en beheerders</b> zien deze — de deelnemer zelf niet.</li>
+    <li><b>Alle check-ins:</b> de volledige tabel met alle ingevulde waarden en notities.</li>
+    <li><b>Reset wachtwoord:</b> is een deelnemer zijn wachtwoord kwijt en lukt de e-mail-reset niet? Genereer hier een nieuw tijdelijk wachtwoord.</li>
+  </ul>
+  <div class="tip">💡 Gebruik coachnotities voor afspraken en observaties ("wil in oktober 2 kg eraf", "knieblessure — geen hardlopen"). Zo pak je elk gesprek de draad zo weer op.</div>
+</section>
+
+<!-- ======================= ADMIN ======================= -->
+<section id="admin">
+  <h2>4. Voor de hoofdbeheerder <span class="chip">Admin</span></h2>
+  <p>Als beheerder kun je álles wat een coach kan, plus het beheer van het hele platform. En belangrijk: <b>je kunt zelf ook coach zijn</b> — deelnemers die zich via jouw uitnodigingslink aanmelden, hangen automatisch aan jou.</p>
+
+  <h3>Het overzicht</h3>
+  <ul>
+    <li><b>Statistieken:</b> actieve deelnemers, aantal coaches, check-ins deze week en hoeveel deelnemers deze week actief waren.</li>
+    <li><b>Aandacht nodig:</b> deelnemers die al 7+ dagen geen check-in deden — met directe link naar hun dossier.</li>
+    <li><b>Waarschuwing "zonder coach":</b> als er deelnemers zijn zonder coach, zie je dat hier meteen.</li>
+  </ul>
+
+  <h3>Deelnemersbeheer</h3>
+  <p>Op de pagina <span class="kbd">Deelnemers</span> zie je iedereen, van alle coaches. Per deelnemer:</p>
+  <ul>
+    <li><span class="kbd">Bekijk</span> — het volledige dossier openen (zoals een coach dat ziet).</li>
+    <li><span class="kbd">Bewerk</span> — naam of e-mail aanpassen, <b>aan een (andere) coach koppelen</b> (beheerders staan ook in die lijst, met "(Beheerder)" erachter), en de status wijzigen:</li>
+  </ul>
+  <table>
+    <tr><th>Actie</th><th>Wanneer gebruik je het</th></tr>
+    <tr><td><b>Inactief zetten</b></td><td>Tijdelijk blokkeren. De persoon kan niet meer inloggen, maar alle gegevens blijven bewaard. Altijd omkeerbaar.</td></tr>
+    <tr><td><b>Verwijderen</b></td><td>Permanent wissen, inclusief alle check-ins, intake en notities. <b>Niet terug te draaien.</b> De rode knop zit onderin het bewerkvenster.</td></tr>
+  </table>
+  <div class="warn">⚠️ <b>Twijfel je?</b> Kies dan voor inactief zetten. Verwijderen is definitief — er is geen prullenbak.</div>
+
+  <h3>Team: coaches &amp; beheerders</h3>
+  <p>Op de pagina <span class="kbd">Team</span> beheer je het team:</p>
+  <ul>
+    <li><b>Nieuwe coach via link (aanrader):</b> klik bij Coaches op <span class="kbd">Uitnodigingslink</span>. Deze link is <b>éénmalig geldig</b> — zodra er een account mee is aangemaakt, vervalt hij. Deel hem via WhatsApp (met taalkeuze NL/EN) of kopieer hem. Voor elke volgende coach genereer je een nieuwe link.</li>
+    <li><b>Nieuwe coach handmatig:</b> <span class="kbd">+ Nieuwe coach</span> → naam + e-mail → tijdelijk wachtwoord delen.</li>
+    <li><b>Nieuwe beheerder:</b> <span class="kbd">+ Nieuwe beheerder</span> werkt hetzelfde. Een beheerder kan álles — geef deze rol alleen aan mensen die je volledig vertrouwt.</li>
+    <li><b>Wachtwoord resetten</b> kan hier voor elke coach of beheerder.</li>
+  </ul>
+  <div class="warn">⚠️ Je kunt <b>jezelf niet verwijderen of deactiveren</b> — zo kan het platform nooit zonder beheerder komen te zitten.</div>
+
+  <h3>Verwijderde coach — wat gebeurt er met de deelnemers?</h3>
+  <p>Verwijder (of deactiveer) je een coach, dan blijven de deelnemers gewoon bestaan, maar staan ze <b>zonder coach</b>. Je ziet ze dan in de waarschuwing op het overzicht — koppel ze via <span class="kbd">Deelnemers → Bewerk</span> aan een andere coach.</p>
+</section>
+
+<!-- ======================= FAQ ======================= -->
+<section id="faq">
+  <h2>5. Veelgestelde vragen</h2>
+
+  <h3>Ik krijg geen reset-e-mail</h3>
+  <p>Check je spamfolder (afzender: no-reply@hblwellnessform.com). Let op: je kunt maximaal 3 aanvragen per kwartier doen. Lukt het echt niet? Je coach of de beheerder kan handmatig een nieuw tijdelijk wachtwoord voor je maken.</p>
+
+  <h3>Mijn uitnodigingslink "is niet (meer) geldig"</h3>
+  <p>Voor <b>deelnemers</b>: de coach heeft waarschijnlijk een nieuwe link gegenereerd — vraag om de nieuwe. Voor <b>coaches</b>: die link is éénmalig; als iemand hem al heeft gebruikt, moet de beheerder een nieuwe maken.</p>
+
+  <h3>Ik heb twee keer op dezelfde dag ingecheckt</h3>
+  <p>Geen probleem: de tweede invulling <b>overschrijft</b> de eerste. Er bestaat altijd maximaal één check-in per dag.</p>
+
+  <h3>Kan mijn coach mijn wachtwoord zien?</h3>
+  <p>Nee, nooit. Wachtwoorden worden versleuteld opgeslagen. Een coach kan wel een <i>nieuw tijdelijk</i> wachtwoord genereren, maar je oude wachtwoord kan niemand inzien.</p>
+
+  <h3>Wie ziet mijn gegevens?</h3>
+  <p>Jij, je eigen coach en de beheerder(s). Andere deelnemers zien nooit iets van jou. Coachnotities zijn alleen zichtbaar voor coaches en beheerders.</p>
+
+  <h3>Hoe zet ik de app in het Engels?</h3>
+  <p>Klik op het <span class="kbd">EN</span>-knopje in de zijbalk (of de taalkeuze op het loginscherm). Ook de e-mails komen dan in het Engels.</p>
+
+  <h3>Deze handleiding delen of printen?</h3>
+  <p>Deel simpelweg de link <b>hblwellnessform.com/handleiding</b>, of print deze pagina via je browser (Ctrl/Cmd+P) — hij is print-vriendelijk opgemaakt, ook naar PDF.</p>
+</section>
+
+<p style="text-align:center"><a class="top" href="#top" onclick="scrollTo({top:0,behavior:'smooth'});return false">↑ Terug naar boven</a></p>
+
+</main>
+<footer>HerbaForms · hblwellnessform.com · Handleiding versie september 2026</footer>
+</body>
+</html>

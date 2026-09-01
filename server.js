@@ -479,6 +479,10 @@ const intIn = (v, lo, hi) => {
   return n === null ? null : Math.min(hi, Math.max(lo, Math.round(n)));
 };
 
+app.get(['/handleiding', '/manual'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'handleiding.html'));
+});
+
 // SPA fallback
 app.get(/^\/(?!api\/).*/, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

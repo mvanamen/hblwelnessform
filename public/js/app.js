@@ -142,6 +142,7 @@
       'set.title': 'Instellingen', 'set.display': 'Weergave', 'set.lang': 'Taal',
       'lang.nl': 'Nederlands', 'lang.en': 'Engels',
       'you': 'jij',
+      'help.manual': '\ud83d\udcd6 Handleiding',
       'fp.link': 'Wachtwoord vergeten?',
       'fp.title': 'Wachtwoord vergeten',
       'fp.sub': 'Vul je e-mailadres in, dan sturen we je een link om een nieuw wachtwoord in te stellen.',
@@ -332,6 +333,7 @@
       'set.title': 'Settings', 'set.display': 'Appearance', 'set.lang': 'Language',
       'lang.nl': 'Dutch', 'lang.en': 'English',
       'you': 'you',
+      'help.manual': '\ud83d\udcd6 Manual',
       'fp.link': 'Forgot password?',
       'fp.title': 'Forgot password',
       'fp.sub': "Enter your email address and we'll send you a link to set a new password.",
@@ -702,7 +704,8 @@
               <input class="input" name="password" type="password" required autocomplete="current-password" placeholder="••••••••"></div>
             <button class="btn big" type="submit">${t('login.submit')}</button>
           </form>
-          <p style="text-align:center;font-size:13.5px"><a href="#/wachtwoord-vergeten">${t('fp.link')}</a></p>
+          <p style="text-align:center;font-size:13.5px"><a href="#/wachtwoord-vergeten">${t('fp.link')}</a>
+            &nbsp;\u00b7&nbsp; <a href="/handleiding" target="_blank" rel="noopener">${t('help.manual')}</a></p>
         </div>
         ${langToggleHTML()}
         </div>
@@ -1742,6 +1745,9 @@
       <div class="card">
         <div class="card-head"><div><div class="card-title">${t('set.display')}</div></div></div>
         <button class="btn ghost" data-th>${t('theme.switch')}</button>
+      </div>
+      <div class="card" style="text-align:center">
+        <a class="btn ghost" href="/handleiding" target="_blank" rel="noopener">${t('help.manual')}</a>
       </div>`;
     bindPasswordForm(root);
     bindLangToggle(root);
