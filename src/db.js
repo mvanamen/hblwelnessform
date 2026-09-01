@@ -68,6 +68,23 @@ CREATE INDEX IF NOT EXISTS idx_checkins_user ON checkins(user_id, date);
 CREATE INDEX IF NOT EXISTS idx_users_coach ON users(coach_id);
 `);
 
+// Migraties: voeg intake-kolommen toe als ze nog niet bestaan (idempotent).
+const profileCols = new Set(db.prepare(`PRAGMA table_info(profiles)`).all().map((c) => c.name));
+const addCol = (name, type) => {
+  if (!profileCols.has(name)) db.exec(`ALTER TABLE profiles ADD COLUMN ${name} ${type}`);
+};
+[
+  ['first_name', 'TEXT'], ['surname', 'TEXT'], ['facebook_name', 'TEXT'],
+  ['phone', 'TEXT'], ['whatsapp', 'TEXT'],
+  ['street', 'TEXT'], ['house_number', 'TEXT'], ['zipcode', 'TEXT'],
+  ['suburb', 'TEXT'], ['city', 'TEXT'], ['province', 'TEXT'], ['country', 'TEXT'],
+  ['gender', 'TEXT'], ['waist_cm', 'REAL'], ['energy_level', 'INTEGER'],
+  ['goal_type', 'TEXT'], ['reason', 'TEXT'], ['tried_before', 'TEXT'],
+  ['meals_day', 'TEXT'], ['snacking', 'TEXT'], ['eat_out', 'TEXT'], ['water_daily', 'TEXT'],
+  ['drinks', 'TEXT'], ['other_drink', 'TEXT'],
+  ['tired_when', 'TEXT'], ['hungry_when', 'TEXT'], ['medication', 'TEXT'],
+].forEach(([n, t]) => addCol(n, t));
+
 // Seed a first admin account so the owner can log in and set everything up.
 const hasAdmin = db.prepare(`SELECT 1 FROM users WHERE role = 'admin' LIMIT 1`).get();
 if (!hasAdmin) {

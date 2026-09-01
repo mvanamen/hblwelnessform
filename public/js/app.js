@@ -77,6 +77,33 @@
       'act.high': 'Erg actief', 'act.athlete': 'Topsporter',
       'pw.title': 'Wachtwoord wijzigen', 'pw.current': 'Huidig wachtwoord', 'pw.next': 'Nieuw wachtwoord',
       'pw.submit': 'Wachtwoord wijzigen', 'pw.changed': 'Wachtwoord gewijzigd ✔',
+      'in.required': 'Velden met * zijn verplicht.',
+      'in.s.personal': 'Persoonlijke gegevens', 'in.s.address': 'Adres', 'in.s.measure': 'Metingen',
+      'in.s.goal': 'Jouw doel', 'in.s.habits': 'Gewoonten',
+      'in.first': 'Voornaam', 'in.surname': 'Achternaam',
+      'in.facebook': 'Facebooknaam', 'in.facebook.hint': 'Geen Facebook? Typ "none".',
+      'in.phone': 'Telefoon', 'in.whatsapp': 'WhatsApp',
+      'in.street': 'Straatnaam', 'in.street.hint': 'Geen postbus.',
+      'in.number': 'Huisnummer', 'in.zip': 'Postcode', 'in.suburb': 'Wijk',
+      'in.city': 'Woonplaats', 'in.province': 'Provincie', 'in.country': 'Land',
+      'in.gender': 'Geslacht', 'gender.male': 'Man', 'gender.female': 'Vrouw',
+      'in.weight': 'Gewicht (kg)', 'in.waist': 'Taille (cm)', 'in.waist.hint': 'In centimeters.',
+      'in.energy': 'Energieniveau',
+      'in.goaltype': 'Wat is je doel?', 'goal.health': 'Gezondheid', 'goal.gain': 'Aankomen', 'goal.lose': 'Afvallen',
+      'in.goaldesc': 'Omschrijf je doel', 'in.reason': 'Reden',
+      'in.goalweight.hint': 'Optioneel — voor de voortgangsgrafiek.',
+      'in.tried': 'Wat heb je eerder geprobeerd en waarom werkte het niet voor jou?',
+      'in.meals': 'Eet je drie maaltijden per dag? Zo niet, welke sla je over?',
+      'in.snack': 'Snack je? Zo ja, wat snack je?',
+      'in.eatout': 'Hoe vaak per week eet je buiten de deur?',
+      'in.water': 'Hoeveel water drink je per dag?',
+      'in.drinks': 'Wat drink je verder?',
+      'drink.tea': 'Thee', 'drink.coffee': 'Koffie', 'drink.energydrink': 'Energiedrank',
+      'drink.soda': 'Frisdrank', 'drink.other': 'Anders',
+      'in.otherdrink': 'Bij "anders": wat drink je?',
+      'in.tired': 'Wanneer ben je het meest moe?',
+      'in.hungry': 'Wanneer heb je de meeste honger?',
+      'in.medication': 'Gebruik je medicatie? Zo ja, omschrijf',
       'badge.none': 'nog geen check-in', 'badge.active': 'actief', 'badge.silent': '{n} dgn stil',
       'badge.inactive': 'inactief', 'badge.nocoach': 'geen coach',
       'co.title': 'Mijn deelnemers', 'co.sub': '{n} deelnemer(s) gekoppeld aan jou.',
@@ -198,6 +225,33 @@
       'act.high': 'Very active', 'act.athlete': 'Athlete',
       'pw.title': 'Change password', 'pw.current': 'Current password', 'pw.next': 'New password',
       'pw.submit': 'Change password', 'pw.changed': 'Password changed ✔',
+      'in.required': 'Fields marked * are required.',
+      'in.s.personal': 'Personal details', 'in.s.address': 'Address', 'in.s.measure': 'Measurements',
+      'in.s.goal': 'Your goal', 'in.s.habits': 'Habits',
+      'in.first': 'First name', 'in.surname': 'Surname',
+      'in.facebook': 'Facebook name', 'in.facebook.hint': 'If none, type "none".',
+      'in.phone': 'Phone', 'in.whatsapp': 'WhatsApp',
+      'in.street': 'Street name', 'in.street.hint': 'No mailbox allowed.',
+      'in.number': 'House number', 'in.zip': 'Zip / postal code', 'in.suburb': 'Suburb',
+      'in.city': 'City', 'in.province': 'Province', 'in.country': 'Country',
+      'in.gender': 'Gender', 'gender.male': 'Male', 'gender.female': 'Female',
+      'in.weight': 'Weight (kg)', 'in.waist': 'Waist (cm)', 'in.waist.hint': 'In centimetres.',
+      'in.energy': 'Energy level',
+      'in.goaltype': 'Your goal?', 'goal.health': 'Health', 'goal.gain': 'Gain weight', 'goal.lose': 'Lose weight',
+      'in.goaldesc': 'Describe your goal', 'in.reason': 'Reason',
+      'in.goalweight.hint': 'Optional — used for the progress chart.',
+      'in.tried': 'What have you tried before and why did it not work for you?',
+      'in.meals': 'Do you take three meals a day? If not, which meals do you skip?',
+      'in.snack': 'Do you snack? If yes, what do you snack on?',
+      'in.eatout': 'How many times a week do you eat out?',
+      'in.water': 'How much water do you drink daily?',
+      'in.drinks': 'What else do you drink?',
+      'drink.tea': 'Tea', 'drink.coffee': 'Coffee', 'drink.energydrink': 'Energy drink',
+      'drink.soda': 'Soda', 'drink.other': 'Other',
+      'in.otherdrink': 'In case of "other": what do you drink?',
+      'in.tired': 'When are you most tired?',
+      'in.hungry': 'When are you most hungry?',
+      'in.medication': 'Do you take medication? If so, describe',
       'badge.none': 'no check-in yet', 'badge.active': 'active', 'badge.silent': 'quiet for {n} days',
       'badge.inactive': 'inactive', 'badge.nocoach': 'no coach',
       'co.title': 'My members', 'co.sub': '{n} member(s) linked to you.',
@@ -270,15 +324,6 @@
     document.documentElement.lang = LANG;
     route();
   }
-
-  // Activiteitsniveau: opgeslagen als code; oude data kan nog Nederlandse tekst zijn.
-  const ACTIVITY_CODES = ['low', 'light', 'medium', 'high', 'athlete'];
-  const LEGACY_ACTIVITY = {
-    'Weinig actief': 'low', 'Licht actief': 'light', 'Gemiddeld actief': 'medium',
-    'Erg actief': 'high', 'Topsporter': 'athlete',
-  };
-  const activityCode = (v) => ACTIVITY_CODES.includes(v) ? v : (LEGACY_ACTIVITY[v] || null);
-  const activityLabel = (v) => { const c = activityCode(v); return c ? t('act.' + c) : (v || '—'); };
 
   // ---------- thema ----------
   function applyTheme() {
@@ -485,8 +530,8 @@
   }
   function memberStats(profile, checkins) {
     const w = weightSeries(checkins);
-    const current = w.length ? w[w.length - 1].value : null;
     const start = profile?.start_weight ?? (w.length ? w[0].value : null);
+    const current = w.length ? w[w.length - 1].value : start;
     const goal = profile?.goal_weight ?? null;
     const delta = current != null && start != null ? current - start : null;
     const cutoff = new Date(Date.now() - 14 * 864e5).toISOString().slice(0, 10);
@@ -796,44 +841,113 @@
     render(data.checkins);
   }
 
+  const DRINK_CODES = ['tea', 'coffee', 'energydrink', 'soda', 'other'];
+  const parseDrinks = (v) => { try { const a = JSON.parse(v || '[]'); return Array.isArray(a) ? a : []; } catch { return []; } };
+
   async function profileView() {
     const root = shell(`<div class="skeleton">${t('loading')}</div>`);
     const { profile } = await api('/me');
     const p = profile || {};
-    const curAct = activityCode(p.activity_level);
+    const nameParts = state.user.name.split(' ');
+    const firstDefault = p.first_name ?? nameParts[0];
+    const surnameDefault = p.surname ?? nameParts.slice(1).join(' ');
+    const drinks = new Set(parseDrinks(p.drinks));
+    let gender = p.gender || null;
+    let goalType = p.goal_type || null;
+    let energyLevel = p.energy_level || null;
+
+    const txt = (name, key, { req = false, hint = '', value = '', full = false, type = 'text', attrs = '' } = {}) => `
+      <div class="field${full ? ' full' : ''}"><label>${t(key)}${req ? ' *' : ''}</label>
+        <input class="input" type="${type}" name="${name}" value="${esc(value ?? '')}" ${req ? 'required' : ''} ${attrs}>
+        ${hint ? `<span class="hint">${hint}</span>` : ''}</div>`;
+    const area = (name, key, { req = false, value = '' } = {}) => `
+      <div class="field full"><label>${t(key)}${req ? ' *' : ''}</label>
+        <textarea class="input" name="${name}" ${req ? 'required' : ''}>${esc(value ?? '')}</textarea></div>`;
+    const chipRow = (dataAttr, codes, prefix, selected, { multi = false } = {}) => `
+      <div class="chips" ${dataAttr}>${codes.map((c) =>
+        `<button type="button" class="chip" style="min-width:auto;padding:9px 16px" data-v="${c}"
+          data-on="${multi ? (selected.has(c) ? 1 : 0) : (selected === c ? 1 : 0)}">${t(prefix + c)}</button>`).join('')}</div>`;
+    const section = (key, inner) => `
+      <div class="card" style="display:flex;flex-direction:column;gap:16px">
+        <div class="card-title">${t(key)}</div>
+        <div class="form-grid">${inner}</div>
+      </div>`;
+
     root.innerHTML = `
       <div class="page-head"><div><h1>${t('pr.title')}</h1>
-        <p class="sub">${t('pr.sub')}</p></div></div>
-      <form id="pr-form" class="card" style="display:flex;flex-direction:column;gap:18px">
-        <div class="form-grid">
-          <div class="field"><label>${t('pr.birthdate')}</label>
-            <input class="input" type="date" name="birthdate" value="${esc(p.birthdate || '')}" max="${today()}"></div>
-          <div class="field"><label>${t('pr.height')}</label>
-            <input class="input" type="number" name="height_cm" step="0.5" min="100" max="250" value="${p.height_cm ?? ''}" inputmode="decimal"></div>
-          <div class="field"><label>${t('pr.startweight')}</label>
-            <input class="input" type="number" name="start_weight" step="0.1" min="20" max="400" value="${p.start_weight ?? ''}" inputmode="decimal"></div>
-          <div class="field"><label>${t('pr.goalweight')}</label>
-            <input class="input" type="number" name="goal_weight" step="0.1" min="20" max="400" value="${p.goal_weight ?? ''}" inputmode="decimal"></div>
-          <div class="field"><label>${t('pr.activity')}</label>
-            <select class="input" name="activity_level">
-              <option value="">${t('pr.choose')}</option>
-              ${ACTIVITY_CODES.map((c) => `<option value="${c}"${curAct === c ? ' selected' : ''}>${t('act.' + c)}</option>`).join('')}
-            </select></div>
-          <div class="field"><label>${t('pr.goal')}</label>
-            <input class="input" name="goal_text" value="${esc(p.goal_text || '')}" placeholder="${t('pr.goal.ph')}"></div>
-          <div class="field full"><label>${t('pr.health')}</label>
-            <textarea class="input" name="health_notes" placeholder="${t('pr.health.ph')}">${esc(p.health_notes || '')}</textarea></div>
-        </div>
+        <p class="sub">${t('pr.sub')} ${t('in.required')}</p></div></div>
+      <form id="pr-form" style="display:flex;flex-direction:column;gap:18px">
+        ${section('in.s.personal', `
+          ${txt('first_name', 'in.first', { req: true, value: firstDefault })}
+          ${txt('surname', 'in.surname', { req: true, value: surnameDefault })}
+          ${txt('facebook_name', 'in.facebook', { req: true, value: p.facebook_name, hint: t('in.facebook.hint') })}
+          ${txt('phone', 'in.phone', { req: true, value: p.phone, type: 'tel' })}
+          ${txt('whatsapp', 'in.whatsapp', { value: p.whatsapp, type: 'tel' })}
+          <div class="field"><label>${t('in.gender')} *</label>${chipRow('data-gender', ['male', 'female'], 'gender.', gender)}</div>
+          ${txt('birthdate', 'pr.birthdate', { req: true, value: p.birthdate, type: 'date', attrs: `max="${today()}"` })}
+        `)}
+        ${section('in.s.address', `
+          ${txt('street', 'in.street', { req: true, value: p.street, hint: t('in.street.hint') })}
+          ${txt('house_number', 'in.number', { req: true, value: p.house_number })}
+          ${txt('zipcode', 'in.zip', { value: p.zipcode })}
+          ${txt('suburb', 'in.suburb', { value: p.suburb })}
+          ${txt('city', 'in.city', { req: true, value: p.city })}
+          ${txt('province', 'in.province', { value: p.province })}
+          ${txt('country', 'in.country', { req: true, value: p.country })}
+        `)}
+        ${section('in.s.measure', `
+          ${txt('height_cm', 'pr.height', { req: true, value: p.height_cm, type: 'number', attrs: 'step="0.5" min="100" max="250" inputmode="decimal"' })}
+          ${txt('start_weight', 'in.weight', { req: true, value: p.start_weight, type: 'number', attrs: 'step="0.1" min="20" max="400" inputmode="decimal"' })}
+          ${txt('waist_cm', 'in.waist', { req: true, value: p.waist_cm, hint: t('in.waist.hint'), type: 'number', attrs: 'step="0.5" min="30" max="250" inputmode="decimal"' })}
+          <div class="field full"><label>${t('in.energy')} *</label>
+            <div class="chips" data-energy>${Array.from({ length: 10 }, (_, i) =>
+              `<button type="button" class="chip" data-v="${i + 1}" data-on="${energyLevel === i + 1 ? 1 : 0}">${i + 1}</button>`).join('')}</div>
+            <span class="hint">${t('ci.energy.hint')}</span></div>
+        `)}
+        ${section('in.s.goal', `
+          <div class="field full"><label>${t('in.goaltype')} *</label>${chipRow('data-goal', ['health', 'gain', 'lose'], 'goal.', goalType)}</div>
+          ${area('goal_text', 'in.goaldesc', { req: true, value: p.goal_text })}
+          ${area('reason', 'in.reason', { req: true, value: p.reason })}
+          ${area('tried_before', 'in.tried', { req: true, value: p.tried_before })}
+          ${txt('goal_weight', 'pr.goalweight', { value: p.goal_weight, hint: t('in.goalweight.hint'), type: 'number', attrs: 'step="0.1" min="20" max="400" inputmode="decimal"' })}
+        `)}
+        ${section('in.s.habits', `
+          ${area('meals_day', 'in.meals', { req: true, value: p.meals_day })}
+          ${area('snacking', 'in.snack', { req: true, value: p.snacking })}
+          ${txt('eat_out', 'in.eatout', { req: true, value: p.eat_out })}
+          ${txt('water_daily', 'in.water', { req: true, value: p.water_daily })}
+          <div class="field full"><label>${t('in.drinks')}</label>${chipRow('data-drinks', DRINK_CODES, 'drink.', drinks, { multi: true })}</div>
+          ${txt('other_drink', 'in.otherdrink', { value: p.other_drink })}
+          ${txt('tired_when', 'in.tired', { req: true, value: p.tired_when })}
+          ${txt('hungry_when', 'in.hungry', { req: true, value: p.hungry_when })}
+          ${area('medication', 'in.medication', { req: true, value: p.medication ?? p.health_notes })}
+        `)}
         <button class="btn big" type="submit">${t('pr.submit')}</button>
       </form>
       <div class="card">
         <div class="card-head"><div><div class="card-title">${t('pw.title')}</div></div></div>
         ${passwordFormHTML()}
       </div>`;
+
+    // chips activeren (enkelvoudige en meervoudige selectie)
+    root.querySelectorAll('[data-on="1"]').forEach((c) => c.classList.add('on'));
+    const bindSingle = (sel, set) => root.querySelectorAll(`${sel} .chip`).forEach((c) => c.onclick = () => {
+      root.querySelectorAll(`${sel} .chip`).forEach((x) => x.classList.remove('on'));
+      c.classList.add('on'); set(c.dataset.v);
+    });
+    bindSingle('[data-gender]', (v) => gender = v);
+    bindSingle('[data-goal]', (v) => goalType = v);
+    bindSingle('[data-energy]', (v) => energyLevel = Number(v));
+    root.querySelectorAll('[data-drinks] .chip').forEach((c) => c.onclick = () => {
+      c.classList.toggle('on');
+      if (c.classList.contains('on')) drinks.add(c.dataset.v); else drinks.delete(c.dataset.v);
+    });
+
     document.getElementById('pr-form').onsubmit = async (e) => {
       e.preventDefault();
+      if (!gender || !goalType || !energyLevel) { toast(t('in.required'), true); return; }
       const f = new FormData(e.target);
-      const body = {};
+      const body = { gender, goal_type: goalType, energy_level: energyLevel, drinks: [...drinks] };
       for (const [k, v] of f.entries()) body[k] = v;
       try {
         const res = await api('/member/profile', { method: 'PUT', body });
@@ -982,17 +1096,7 @@
       <div class="grid-2">
         <div class="card">
           <div class="card-head"><div><div class="card-title">${t('co.intake')}</div></div></div>
-          ${profile && profile.completed ? `<div class="list">
-            ${[[t('pr.birthdate'), profile.birthdate ? fmtDate(profile.birthdate) : '—'],
-               [t('pr.height'), profile.height_cm ? fmtNum(profile.height_cm, 1) + ' cm' : '—'],
-               [t('pr.startweight'), profile.start_weight ? fmtNum(profile.start_weight) + ' kg' : '—'],
-               [t('pr.goalweight'), profile.goal_weight ? fmtNum(profile.goal_weight) + ' kg' : '—'],
-               [t('pr.activity'), activityLabel(profile.activity_level)],
-               [t('pr.goal'), profile.goal_text || '—'],
-               [t('pr.health'), profile.health_notes || '—']]
-              .map(([k, v]) => `<div class="list-item"><small style="color:var(--ink-3);font-weight:650">${esc(k)}</small>
-                <span style="text-align:right;white-space:normal">${esc(v)}</span></div>`).join('')}
-          </div>` : `<div class="empty"><p>${t('co.intake.empty')}</p></div>`}
+          ${profile && profile.completed ? intakeDetailHTML(profile) : `<div class="empty"><p>${t('co.intake.empty')}</p></div>`}
         </div>
         <div class="card">
           <div class="card-head"><div><div class="card-title">${t('co.notes')}</div>
@@ -1035,6 +1139,61 @@
       m.querySelector('[data-copy]').onclick = () => copyText(res.password);
       m.querySelector('[data-done]').onclick = closeModal;
     } catch (err) { toast(err.message, true); }
+  }
+
+  function intakeDetailHTML(p) {
+    const val = (v) => v == null || v === '' ? '—' : String(v);
+    const num2 = (v, unit) => v == null ? '—' : `${fmtNum(v, 1)} ${unit}`;
+    const drinksLabel = () => {
+      const d = parseDrinks(p.drinks).map((c) => t('drink.' + c));
+      return d.length ? d.join(', ') + (p.other_drink ? ` (${p.other_drink})` : '') : '—';
+    };
+    const address = [p.street && `${p.street} ${p.house_number || ''}`.trim(), p.zipcode, p.suburb, p.city, p.province, p.country]
+      .filter(Boolean).join(', ');
+    const sections = [
+      [t('in.s.personal'), [
+        [t('modal.name'), [p.first_name, p.surname].filter(Boolean).join(' ') || null],
+        [t('in.facebook'), p.facebook_name],
+        [t('in.phone'), p.phone],
+        [t('in.whatsapp'), p.whatsapp],
+        [t('in.gender'), p.gender ? t('gender.' + p.gender) : null],
+        [t('pr.birthdate'), p.birthdate ? fmtDate(p.birthdate) : null],
+        [t('in.s.address'), address || null],
+      ]],
+      [t('in.s.measure'), [
+        [t('pr.height'), p.height_cm != null ? num2(p.height_cm, 'cm') : null],
+        [t('in.weight'), p.start_weight != null ? num2(p.start_weight, 'kg') : null],
+        [t('in.waist'), p.waist_cm != null ? num2(p.waist_cm, 'cm') : null],
+        [t('in.energy'), p.energy_level != null ? p.energy_level + '/10' : null],
+      ]],
+      [t('in.s.goal'), [
+        [t('in.goaltype'), p.goal_type ? t('goal.' + p.goal_type) : null],
+        [t('in.goaldesc'), p.goal_text],
+        [t('pr.goalweight'), p.goal_weight != null ? num2(p.goal_weight, 'kg') : null],
+        [t('in.reason'), p.reason],
+        [t('in.tried'), p.tried_before],
+      ]],
+      [t('in.s.habits'), [
+        [t('in.meals'), p.meals_day],
+        [t('in.snack'), p.snacking],
+        [t('in.eatout'), p.eat_out],
+        [t('in.water'), p.water_daily],
+        [t('in.drinks'), parseDrinks(p.drinks).length ? drinksLabel() : null],
+        [t('in.tired'), p.tired_when],
+        [t('in.hungry'), p.hungry_when],
+        [t('in.medication'), p.medication ?? p.health_notes],
+      ]],
+    ];
+    return sections.map(([title, rows]) => {
+      const filled = rows.filter(([, v]) => v != null && v !== '');
+      if (!filled.length) return '';
+      return `<div style="margin-bottom:6px">
+        <div style="font-size:12.5px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em;margin:10px 0 2px">${esc(title)}</div>
+        <div class="list">${filled.map(([k, v]) => `
+          <div class="list-item" style="align-items:start"><small style="color:var(--ink-3);font-weight:650;max-width:45%">${esc(k)}</small>
+            <span style="text-align:right;white-space:pre-wrap;max-width:55%">${esc(val(v))}</span></div>`).join('')}</div>
+      </div>`;
+    }).join('');
   }
 
   function notesHTML(notes) {

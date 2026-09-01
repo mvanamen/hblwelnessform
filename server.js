@@ -83,18 +83,32 @@ app.get('/api/member/dashboard', requireRole('member'), (req, res) => {
   res.json({ ...memberSnapshot(req.user), coach });
 });
 
+const PROFILE_TEXT_FIELDS = [
+  'birthdate', 'goal_text', 'first_name', 'surname', 'facebook_name', 'phone', 'whatsapp',
+  'street', 'house_number', 'zipcode', 'suburb', 'city', 'province', 'country',
+  'goal_type', 'reason', 'tried_before', 'meals_day', 'snacking', 'eat_out', 'water_daily',
+  'other_drink', 'tired_when', 'hungry_when', 'medication',
+];
+const PROFILE_NUM_FIELDS = ['height_cm', 'start_weight', 'goal_weight', 'waist_cm'];
+
 app.put('/api/member/profile', requireRole('member'), (req, res) => {
   const b = req.body || {};
+  if (b.gender && !['male', 'female'].includes(b.gender)) b.gender = null;
+  const drinks = Array.isArray(b.drinks)
+    ? JSON.stringify(b.drinks.filter((d) => ['tea', 'coffee', 'energydrink', 'soda', 'other'].includes(d)))
+    : null;
+  const cols = { user_id: req.user.id, gender: b.gender || null, drinks,
+                 energy_level: intIn(b.energy_level, 1, 10), completed: 1 };
+  for (const f of PROFILE_TEXT_FIELDS) cols[f] = (b[f] === undefined || b[f] === '') ? null : String(b[f]);
+  for (const f of PROFILE_NUM_FIELDS) cols[f] = num(b[f]);
+  const names = Object.keys(cols);
   db.prepare(`
-    INSERT INTO profiles (user_id, birthdate, height_cm, start_weight, goal_weight, goal_text, activity_level, health_notes, completed, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'))
+    INSERT INTO profiles (${names.join(', ')}, updated_at)
+    VALUES (${names.map((n) => '@' + n).join(', ')}, datetime('now'))
     ON CONFLICT(user_id) DO UPDATE SET
-      birthdate = excluded.birthdate, height_cm = excluded.height_cm,
-      start_weight = excluded.start_weight, goal_weight = excluded.goal_weight,
-      goal_text = excluded.goal_text, activity_level = excluded.activity_level,
-      health_notes = excluded.health_notes, completed = 1, updated_at = excluded.updated_at
-  `).run(req.user.id, b.birthdate || null, num(b.height_cm), num(b.start_weight),
-         num(b.goal_weight), b.goal_text || null, b.activity_level || null, b.health_notes || null);
+      ${names.filter((n) => n !== 'user_id').map((n) => `${n} = excluded.${n}`).join(', ')},
+      updated_at = excluded.updated_at
+  `).run(cols);
   res.json({ profile: getProfile.get(req.user.id) });
 });
 
