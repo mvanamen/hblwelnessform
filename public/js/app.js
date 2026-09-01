@@ -142,6 +142,18 @@
       'set.title': 'Instellingen', 'set.display': 'Weergave', 'set.lang': 'Taal',
       'lang.nl': 'Nederlands', 'lang.en': 'Engels',
       'you': 'jij',
+      'fp.link': 'Wachtwoord vergeten?',
+      'fp.title': 'Wachtwoord vergeten',
+      'fp.sub': 'Vul je e-mailadres in, dan sturen we je een link om een nieuw wachtwoord in te stellen.',
+      'fp.submit': 'Verstuur resetlink',
+      'fp.sent': 'Als dit e-mailadres bij ons bekend is, hebben we zojuist een resetlink gestuurd. Check ook je spamfolder.',
+      'fp.back': '\u2190 Terug naar inloggen',
+      'rs.title': 'Nieuw wachtwoord instellen',
+      'rs.sub': 'Kies een nieuw wachtwoord voor je account.',
+      'rs.submit': 'Wachtwoord opslaan',
+      'rs.done': 'Wachtwoord gewijzigd \u2014 je kunt nu inloggen \u2714',
+      'rs.invalid': 'Deze resetlink is ongeldig of verlopen. Vraag een nieuwe aan via "Wachtwoord vergeten".',
+      'err.invalid_reset': 'Deze resetlink is ongeldig of verlopen',
       'inv.btn': 'Uitnodigingslink', 'inv.title': 'Jouw uitnodigingslink',
       'inv.sub': 'Deel deze link via WhatsApp of e-mail. Wie de link opent maakt zelf een account aan en wordt automatisch aan jou gekoppeld.',
       'inv.sub.admin': 'Deel deze link via WhatsApp of e-mail. Wie de link opent maakt zelf een account aan (nog zonder coach — koppel daarna een coach via Deelnemers).',
@@ -313,6 +325,18 @@
       'set.title': 'Settings', 'set.display': 'Appearance', 'set.lang': 'Language',
       'lang.nl': 'Dutch', 'lang.en': 'English',
       'you': 'you',
+      'fp.link': 'Forgot password?',
+      'fp.title': 'Forgot password',
+      'fp.sub': "Enter your email address and we'll send you a link to set a new password.",
+      'fp.submit': 'Send reset link',
+      'fp.sent': "If this email address is known to us, we've just sent a reset link. Also check your spam folder.",
+      'fp.back': '\u2190 Back to sign in',
+      'rs.title': 'Set a new password',
+      'rs.sub': 'Choose a new password for your account.',
+      'rs.submit': 'Save password',
+      'rs.done': 'Password changed \u2014 you can now sign in \u2714',
+      'rs.invalid': 'This reset link is invalid or expired. Request a new one via "Forgot password".',
+      'err.invalid_reset': 'This reset link is invalid or expired',
       'inv.btn': 'Invite link', 'inv.title': 'Your invite link',
       'inv.sub': 'Share this link via WhatsApp or email. Anyone who opens it creates their own account and is automatically linked to you.',
       'inv.sub.admin': 'Share this link via WhatsApp or email. Anyone who opens it creates their own account (without a coach — assign one afterwards via Members).',
@@ -655,6 +679,7 @@
               <input class="input" name="password" type="password" required autocomplete="current-password" placeholder="••••••••"></div>
             <button class="btn big" type="submit">${t('login.submit')}</button>
           </form>
+          <p style="text-align:center;font-size:13.5px"><a href="#/wachtwoord-vergeten">${t('fp.link')}</a></p>
         </div>
         ${langToggleHTML()}
         </div>
@@ -715,6 +740,87 @@
         else toast(err.message, true);
       }
     };
+  }
+
+  function forgotView(sent = false) {
+    $app.innerHTML = `
+      <div class="login-wrap">
+        <div style="display:flex;flex-direction:column;gap:14px;width:min(410px,100%)">
+        <div class="login-card">
+          <div class="login-brand">
+            <div class="logo-mark">${I.leaf}</div>
+            <h1>${t('fp.title')}</h1>
+            <p>${t('fp.sub')}</p>
+          </div>
+          ${sent ? `<div class="password-reveal" style="text-align:left"><p style="margin:0;font-size:13.5px">${t('fp.sent')}</p></div>` : `
+          <form id="fp-form" style="display:flex;flex-direction:column;gap:14px">
+            <div class="field"><label>${t('login.email')}</label>
+              <input class="input" name="email" type="email" required autocomplete="email" placeholder="${t('login.placeholder.email')}"></div>
+            <button class="btn big" type="submit">${t('fp.submit')}</button>
+          </form>`}
+          <p style="text-align:center;font-size:13.5px"><a href="#/login">${t('fp.back')}</a></p>
+        </div>
+        ${langToggleHTML()}
+        </div>
+      </div>`;
+    bindLangToggle($app);
+    const form = document.getElementById('fp-form');
+    if (form) form.onsubmit = async (e) => {
+      e.preventDefault();
+      const f = new FormData(form);
+      await api('/forgot', { method: 'POST', body: { email: f.get('email'), lang: LANG } }).catch(() => {});
+      forgotView(true);
+    };
+  }
+
+  async function resetView(token) {
+    $app.innerHTML = `<div class="login-wrap"><div class="login-card"><div class="skeleton">${t('loading')}</div></div></div>`;
+    try { await api('/reset/' + token); }
+    catch {
+      $app.innerHTML = `
+        <div class="login-wrap">
+          <div class="login-card">
+            <div class="login-brand"><div class="logo-mark">${I.leaf}</div>
+              <h1>Herba<span style="color:var(--brand)">Forms</span></h1></div>
+            <div class="form-error">${t('rs.invalid')}</div>
+            <a class="btn ghost" href="#/wachtwoord-vergeten" style="text-align:center">${t('fp.title')}</a>
+          </div>
+        </div>`;
+      return;
+    }
+    const render = (err = '') => {
+      $app.innerHTML = `
+        <div class="login-wrap">
+          <div style="display:flex;flex-direction:column;gap:14px;width:min(410px,100%)">
+          <div class="login-card">
+            <div class="login-brand">
+              <div class="logo-mark">${I.leaf}</div>
+              <h1>${t('rs.title')}</h1>
+              <p>${t('rs.sub')}</p>
+            </div>
+            ${err ? `<div class="form-error">${esc(err)}</div>` : ''}
+            <form id="rs-form" style="display:flex;flex-direction:column;gap:14px">
+              <div class="field"><label>${t('pw.next')}</label>
+                <input class="input" name="password" type="password" required minlength="8" autocomplete="new-password">
+                <span class="hint">${t('force.hint')}</span></div>
+              <button class="btn big" type="submit">${t('rs.submit')}</button>
+            </form>
+          </div>
+          ${langToggleHTML()}
+          </div>
+        </div>`;
+      bindLangToggle($app);
+      document.getElementById('rs-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const f = new FormData(e.target);
+        try {
+          await api('/reset', { method: 'POST', body: { token, password: String(f.get('password')) } });
+          toast(t('rs.done'));
+          location.hash = '#/login';
+        } catch (err) { render(err.message); }
+      };
+    };
+    render();
   }
 
   async function registerView(token) {
@@ -1586,7 +1692,12 @@
       if (state.user) { location.hash = '#/'; return; }
       return registerView(join[1]);
     }
-    if (!state.user) { loginView(); return; }
+    const reset = (location.hash || '').match(/^#\/reset\/([a-f0-9]{64})$/i);
+    if (reset && !state.user) return resetView(reset[1]);
+    if (!state.user) {
+      if (location.hash === '#/wachtwoord-vergeten') return forgotView();
+      loginView(); return;
+    }
     if (state.user.must_change_password) { forcePasswordView(); return; }
 
     const hash = location.hash || '#/';

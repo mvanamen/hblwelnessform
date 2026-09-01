@@ -74,6 +74,68 @@ app.post('/api/password', requireRole('admin', 'coach', 'member'), (req, res) =>
   res.json({ ok: true });
 });
 
+// ---------- Wachtwoord vergeten ----------
+
+const { sendMail, resetEmailHTML } = require('./src/mail');
+const sha256 = (v) => crypto.createHash('sha256').update(v).digest('hex');
+
+// lichte rate-limiter: max 3 aanvragen per kwartier per e-mail/IP
+const forgotHits = new Map();
+function forgotAllowed(key) {
+  const now = Date.now();
+  const hits = (forgotHits.get(key) || []).filter((ts) => now - ts < 15 * 60 * 1000);
+  if (hits.length >= 3) return false;
+  hits.push(now);
+  forgotHits.set(key, hits);
+  return true;
+}
+
+app.post('/api/forgot', async (req, res) => {
+  const email = String(req.body?.email || '').trim();
+  const lang = req.body?.lang === 'en' ? 'en' : 'nl';
+  // Altijd hetzelfde antwoord — verraad niet of een e-mailadres bestaat.
+  res.json({ ok: true });
+  if (!email.includes('@')) return;
+  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || '';
+  if (!forgotAllowed(email.toLowerCase()) || !forgotAllowed('ip:' + ip)) return;
+  const user = db.prepare('SELECT * FROM users WHERE email = ? AND active = 1').get(email);
+  if (!user) return;
+  const token = crypto.randomBytes(32).toString('hex');
+  db.prepare('DELETE FROM password_resets WHERE user_id = ?').run(user.id);
+  db.prepare('INSERT INTO password_resets (token_hash, user_id, expires_at) VALUES (?, ?, ?)')
+    .run(sha256(token), user.id, Date.now() + 60 * 60 * 1000);
+  const proto = req.headers['x-forwarded-proto'] || 'http';
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+  const link = `${proto}://${host}/#/reset/${token}`;
+  const { subject, html } = resetEmailHTML(lang, user.name.split(' ')[0], link);
+  const result = await sendMail({ to: user.email, subject, html });
+  if (result.dev) console.log(`[mail] Reset-link voor ${user.email}: ${link}`);
+});
+
+function resetRowByToken(token) {
+  if (!/^[a-f0-9]{64}$/.test(String(token || ''))) return null;
+  const row = db.prepare('SELECT * FROM password_resets WHERE token_hash = ?').get(sha256(token));
+  if (!row || row.used || row.expires_at < Date.now()) return null;
+  return row;
+}
+
+app.get('/api/reset/:token', (req, res) => {
+  if (!resetRowByToken(req.params.token)) return res.status(404).json({ error: 'invalid_reset' });
+  res.json({ ok: true });
+});
+
+app.post('/api/reset', (req, res) => {
+  const row = resetRowByToken(req.body?.token);
+  if (!row) return res.status(404).json({ error: 'invalid_reset' });
+  const pw = String(req.body?.password || '').trim();
+  if (pw.length < 8) return res.status(400).json({ error: 'password_too_short' });
+  db.prepare('UPDATE users SET password_hash = ?, must_change_password = 0 WHERE id = ?')
+    .run(bcrypt.hashSync(pw, 10), row.user_id);
+  db.prepare('UPDATE password_resets SET used = 1 WHERE token_hash = ?').run(row.token_hash);
+  db.prepare('DELETE FROM sessions WHERE user_id = ?').run(row.user_id);
+  res.json({ ok: true });
+});
+
 // ---------- Uitnodigingslinks & registratie ----------
 
 function ensureInviteToken(userId) {
