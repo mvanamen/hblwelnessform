@@ -34,10 +34,12 @@ function memberSnapshot(member) {
 
 app.post('/api/login', (req, res) => {
   const { email, password } = req.body || {};
-  if (!email || !password) return res.status(400).json({ error: 'Vul e-mail en wachtwoord in' });
+  if (!email || !password) return res.status(400).json({ error: 'missing_credentials' });
   const user = db.prepare('SELECT * FROM users WHERE email = ?').get(String(email).trim());
-  if (!user || !user.active || !bcrypt.compareSync(password, user.password_hash)) {
-    return res.status(401).json({ error: 'Onjuiste inloggegevens' });
+  const pw = String(password);
+  if (!user || !user.active ||
+      (!bcrypt.compareSync(pw, user.password_hash) && !bcrypt.compareSync(pw.trim(), user.password_hash))) {
+    return res.status(401).json({ error: 'invalid_credentials' });
   }
   createSession(res, user.id);
   res.json({ user: publicUser(user) });
@@ -50,20 +52,25 @@ app.post('/api/logout', (req, res) => {
 
 app.get('/api/me', (req, res) => {
   const user = currentUser(req);
-  if (!user) return res.status(401).json({ error: 'Niet ingelogd' });
+  if (!user) return res.status(401).json({ error: 'not_logged_in' });
   res.json({ user: publicUser(user), profile: getProfile.get(user.id) || null });
 });
 
 app.post('/api/password', requireRole('admin', 'coach', 'member'), (req, res) => {
   const { current, next } = req.body || {};
-  if (!next || String(next).length < 8) {
-    return res.status(400).json({ error: 'Nieuw wachtwoord moet minimaal 8 tekens zijn' });
+  const nextPw = String(next || '').trim();
+  if (nextPw.length < 8) {
+    return res.status(400).json({ error: 'password_too_short' });
   }
-  if (!bcrypt.compareSync(current || '', req.user.password_hash)) {
-    return res.status(401).json({ error: 'Huidig wachtwoord klopt niet' });
+  // Vergelijk ook met de getrimde variant: tijdelijke wachtwoorden worden vaak
+  // geplakt met een spatie of regeleinde erachter.
+  const cur = String(current || '');
+  if (!bcrypt.compareSync(cur, req.user.password_hash) &&
+      !bcrypt.compareSync(cur.trim(), req.user.password_hash)) {
+    return res.status(400).json({ error: 'wrong_current_password' });
   }
   db.prepare('UPDATE users SET password_hash = ?, must_change_password = 0 WHERE id = ?')
-    .run(bcrypt.hashSync(String(next), 10), req.user.id);
+    .run(bcrypt.hashSync(nextPw, 10), req.user.id);
   res.json({ ok: true });
 });
 
@@ -94,7 +101,7 @@ app.put('/api/member/profile', requireRole('member'), (req, res) => {
 app.post('/api/member/checkins', requireRole('member'), (req, res) => {
   const b = req.body || {};
   const date = b.date || new Date().toISOString().slice(0, 10);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: 'Ongeldige datum' });
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: 'invalid_date' });
   const energy = intIn(b.energy, 1, 10);
   const mood = intIn(b.mood, 1, 5);
   db.prepare(`
@@ -117,7 +124,7 @@ app.delete('/api/member/checkins/:id', requireRole('member'), (req, res) => {
 function coachMemberOr404(req, res) {
   const member = db.prepare(`SELECT * FROM users WHERE id = ? AND role = 'member'`).get(req.params.id);
   if (!member || (req.user.role === 'coach' && member.coach_id !== req.user.id)) {
-    res.status(404).json({ error: 'Deelnemer niet gevonden' });
+    res.status(404).json({ error: 'member_not_found' });
     return null;
   }
   return member;
@@ -164,7 +171,7 @@ app.post('/api/coach/members/:id/notes', requireRole('coach'), (req, res) => {
   const member = coachMemberOr404(req, res);
   if (!member) return;
   const text = String(req.body?.text || '').trim();
-  if (!text) return res.status(400).json({ error: 'Notitie is leeg' });
+  if (!text) return res.status(400).json({ error: 'empty_note' });
   db.prepare('INSERT INTO coach_notes (member_id, coach_id, text) VALUES (?, ?, ?)')
     .run(member.id, req.user.id, text);
   const notes = db.prepare(`
@@ -210,17 +217,17 @@ app.get('/api/admin/users', requireRole('admin'), (req, res) => {
 
 app.post('/api/admin/users', requireRole('admin'), (req, res) => {
   const { role, name, email, coach_id } = req.body || {};
-  if (!['coach', 'member', 'admin'].includes(role)) return res.status(400).json({ error: 'Ongeldige rol' });
+  if (!['coach', 'member', 'admin'].includes(role)) return res.status(400).json({ error: 'invalid_role' });
   const created = createUser(res, { role, name, email, coach_id: role === 'member' ? coach_id || null : null });
   if (created) res.json(created);
 });
 
 app.put('/api/admin/users/:id', requireRole('admin'), (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
-  if (!user) return res.status(404).json({ error: 'Gebruiker niet gevonden' });
+  if (!user) return res.status(404).json({ error: 'user_not_found' });
   const b = req.body || {};
   if (user.role === 'admin' && b.active === false && user.id === req.user.id) {
-    return res.status(400).json({ error: 'Je kunt jezelf niet deactiveren' });
+    return res.status(400).json({ error: 'cannot_deactivate_self' });
   }
   const name = b.name !== undefined ? String(b.name).trim() : user.name;
   const email = b.email !== undefined ? String(b.email).trim() : user.email;
@@ -231,7 +238,7 @@ app.put('/api/admin/users/:id', requireRole('admin'), (req, res) => {
     db.prepare('UPDATE users SET name = ?, email = ?, active = ?, coach_id = ? WHERE id = ?')
       .run(name, email, active, coachId, user.id);
   } catch (e) {
-    return res.status(400).json({ error: 'E-mailadres is al in gebruik' });
+    return res.status(400).json({ error: 'email_in_use' });
   }
   if (!active) db.prepare('DELETE FROM sessions WHERE user_id = ?').run(user.id);
   res.json({ user: publicUser(db.prepare('SELECT * FROM users WHERE id = ?').get(user.id)) });
@@ -239,7 +246,7 @@ app.put('/api/admin/users/:id', requireRole('admin'), (req, res) => {
 
 app.post('/api/admin/users/:id/reset-password', requireRole('admin'), (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
-  if (!user) return res.status(404).json({ error: 'Gebruiker niet gevonden' });
+  if (!user) return res.status(404).json({ error: 'user_not_found' });
   const password = tempPassword();
   db.prepare('UPDATE users SET password_hash = ?, must_change_password = 1 WHERE id = ?')
     .run(bcrypt.hashSync(password, 10), user.id);
@@ -252,7 +259,7 @@ function createUser(res, { role, name, email, coach_id }) {
   name = String(name || '').trim();
   email = String(email || '').trim();
   if (!name || !email || !email.includes('@')) {
-    res.status(400).json({ error: 'Naam en geldig e-mailadres zijn verplicht' });
+    res.status(400).json({ error: 'name_email_required' });
     return null;
   }
   const password = tempPassword();
@@ -264,7 +271,7 @@ function createUser(res, { role, name, email, coach_id }) {
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
     return { user: publicUser(user), password };
   } catch (e) {
-    res.status(400).json({ error: 'E-mailadres is al in gebruik' });
+    res.status(400).json({ error: 'email_in_use' });
     return null;
   }
 }

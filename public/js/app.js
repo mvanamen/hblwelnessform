@@ -1,14 +1,289 @@
-/* HerbaForms — SPA (vanilla JS, hash-router) */
+/* HerbaForms — SPA (vanilla JS, hash-router, i18n NL/EN) */
 (function () {
   'use strict';
 
   const $app = document.getElementById('app');
   const state = { user: null, profile: null };
 
+  // ============================================================
+  // i18n
+  // ============================================================
+
+  const STR = {
+    nl: {
+      'tagline': 'Jouw voortgang, samen met je coach.',
+      'login.email': 'E-mailadres', 'login.password': 'Wachtwoord', 'login.submit': 'Inloggen',
+      'login.placeholder.email': 'jij@voorbeeld.nl',
+      'force.title': 'Nieuw wachtwoord',
+      'force.intro': 'Welkom {name}! Kies eerst een eigen wachtwoord om verder te gaan.',
+      'force.current': 'Huidig (tijdelijk) wachtwoord', 'force.next': 'Nieuw wachtwoord',
+      'force.hint': 'Minimaal 8 tekens.', 'force.submit': 'Opslaan en doorgaan',
+      'force.success': 'Wachtwoord ingesteld — welkom!',
+      'nav.overview': 'Overzicht', 'nav.checkin': 'Check-in', 'nav.history': 'Historie',
+      'nav.profile': 'Profiel', 'nav.members': 'Deelnemers', 'nav.settings': 'Instellingen',
+      'nav.team': 'Team',
+      'role.admin': 'Beheerder', 'role.coach': 'Coach', 'role.member': 'Deelnemer',
+      'btn.logout': 'Uitloggen', 'btn.cancel': 'Annuleren', 'btn.save': 'Opslaan',
+      'btn.view': 'Bekijk', 'btn.edit': 'Bewerk', 'btn.delete': 'Verwijder',
+      'btn.done': 'Klaar', 'btn.create': 'Account aanmaken', 'btn.resetpw': 'Reset wachtwoord',
+      'btn.copy': 'Kopieer wachtwoord',
+      'loading': 'Laden…',
+      'toast.copied': 'Gekopieerd naar klembord', 'toast.copyfail': 'Kopiëren niet gelukt — noteer het handmatig',
+      'toast.saved': 'Opgeslagen ✔',
+      'theme.dark': 'Donker thema', 'theme.light': 'Licht thema', 'theme.auto': 'Thema volgt systeem',
+      'theme.switch': 'Thema wisselen (licht / donker / systeem)',
+      'greet.night': 'Goedenacht', 'greet.morning': 'Goedemorgen', 'greet.afternoon': 'Goedemiddag', 'greet.evening': 'Goedenavond',
+      'home.sub.some': 'Je hebt {n} check-in(s) gedaan. Blijf zo doorgaan!',
+      'home.sub.none': 'Tijd voor je eerste check-in!',
+      'home.newcheckin': '+ Nieuwe check-in',
+      'home.intake.title': 'Maak je profiel compleet',
+      'home.intake.sub': 'Vul je startgewicht en doel in, dan kunnen we je voortgang laten zien.',
+      'home.intake.btn': 'Profiel invullen',
+      'home.progress.title': 'Op weg naar je doel', 'home.progress.sub': 'Van {a} naar {b} kg',
+      'tile.weight': 'Huidig gewicht', 'tile.togo': 'Nog te gaan', 'tile.energy': 'Energie (14 dagen)',
+      'tile.checkins': 'Check-ins', 'tile.goalweight': 'Doelgewicht', 'tile.energy.short': 'Energie (14 dgn)',
+      'tile.lastcheckin': 'Laatste check-in',
+      'chart.weight': 'Gewicht', 'chart.weight.sub': 'in kilogram',
+      'chart.energy': 'Energie', 'chart.energy.sub': 'score van 1 tot 10',
+      'chart.goal': 'doel', 'chart.empty': 'Nog geen metingen — vul je eerste check-in in.',
+      'home.recent': 'Laatste check-ins', 'home.viewall': 'Alles bekijken',
+      'home.nocheckins': 'Nog geen check-ins.',
+      'home.coach': 'Jouw coach', 'home.coach.msg': 'Vragen over je voortgang? Neem gerust contact op.',
+      'home.nocoach': 'Er is nog geen coach aan je gekoppeld.',
+      'energy.label': 'energie',
+      'ci.title': 'Check-in',
+      'ci.sub': 'Vul in hoe het vandaag met je gaat. Alleen datum is verplicht — de rest mag leeg.',
+      'ci.date': 'Datum', 'ci.weight': 'Gewicht (kg)', 'ci.energy': 'Energie vandaag',
+      'ci.energy.hint': '1 = uitgeput · 10 = bruisend van de energie',
+      'ci.mood': 'Stemming', 'ci.sleep': 'Slaap (uren)', 'ci.water': 'Water (liter)',
+      'ci.notes': 'Notities', 'ci.notes.ph': 'Hoe ging het vandaag? Bijzonderheden?',
+      'ci.submit': 'Check-in opslaan', 'ci.saved': 'Check-in opgeslagen 💪',
+      'ci.ph.weight': 'bijv. 82,5', 'ci.ph.sleep': 'bijv. 7,5', 'ci.ph.water': 'bijv. 2',
+      'hist.title': 'Historie', 'hist.sub': 'Al je check-ins op een rij.',
+      'hist.confirm.title': 'Check-in verwijderen',
+      'hist.confirm.text': 'Weet je zeker dat je deze check-in wilt verwijderen?',
+      'hist.deleted': 'Check-in verwijderd',
+      'th.date': 'Datum', 'th.weight': 'Gewicht', 'th.energy': 'Energie', 'th.sleep': 'Slaap',
+      'th.water': 'Water', 'th.mood': 'Humeur', 'th.notes': 'Notities', 'th.status': 'Status',
+      'th.member': 'Deelnemer', 'th.coach': 'Coach', 'th.lastcheckin': 'Laatste check-in',
+      'th.members': 'Deelnemers', 'th.admin': 'Beheerder',
+      'pr.title': 'Mijn profiel', 'pr.sub': 'Deze gegevens gebruikt je coach om je goed te begeleiden.',
+      'pr.birthdate': 'Geboortedatum', 'pr.height': 'Lengte (cm)', 'pr.startweight': 'Startgewicht (kg)',
+      'pr.goalweight': 'Doelgewicht (kg)', 'pr.activity': 'Hoe actief ben je?', 'pr.choose': 'Maak een keuze',
+      'pr.goal': 'Wat is je doel?', 'pr.goal.ph': 'bijv. fitter worden, afvallen…',
+      'pr.health': 'Gezondheid & bijzonderheden', 'pr.health.ph': 'Allergieën, blessures, medicatie… (optioneel)',
+      'pr.submit': 'Profiel opslaan', 'pr.saved': 'Profiel opgeslagen ✔',
+      'act.low': 'Weinig actief', 'act.light': 'Licht actief', 'act.medium': 'Gemiddeld actief',
+      'act.high': 'Erg actief', 'act.athlete': 'Topsporter',
+      'pw.title': 'Wachtwoord wijzigen', 'pw.current': 'Huidig wachtwoord', 'pw.next': 'Nieuw wachtwoord',
+      'pw.submit': 'Wachtwoord wijzigen', 'pw.changed': 'Wachtwoord gewijzigd ✔',
+      'badge.none': 'nog geen check-in', 'badge.active': 'actief', 'badge.silent': '{n} dgn stil',
+      'badge.inactive': 'inactief', 'badge.nocoach': 'geen coach',
+      'co.title': 'Mijn deelnemers', 'co.sub': '{n} deelnemer(s) gekoppeld aan jou.',
+      'co.new': '+ Nieuwe deelnemer', 'co.search': 'Zoek op naam of e-mail…',
+      'co.empty': 'Nog geen deelnemers. Voeg je eerste deelnemer toe!',
+      'co.back': '← Terug naar overzicht', 'co.since': 'lid sinds {d}',
+      'co.intake': 'Intake', 'co.intake.empty': 'Intake is nog niet ingevuld.',
+      'co.notes': 'Coachnotities', 'co.notes.sub': 'Alleen zichtbaar voor coaches',
+      'co.notes.ph': 'Nieuwe notitie…', 'co.notes.empty': 'Nog geen notities.',
+      'co.allcheckins': 'Alle check-ins',
+      'co.resetpw.title': 'Wachtwoord resetten',
+      'co.resetpw.text': '{name} krijgt een nieuw tijdelijk wachtwoord en moet dit bij de volgende login wijzigen.',
+      'co.resetpw.btn': 'Resetten', 'co.resetpw.result': 'Nieuw tijdelijk wachtwoord',
+      'modal.newmember': 'Nieuwe deelnemer', 'modal.name': 'Naam', 'modal.name.ph': 'Voor- en achternaam',
+      'modal.email.ph': 'deelnemer@voorbeeld.nl', 'modal.coach': 'Koppel aan coach', 'modal.nocoach': '— Geen coach —',
+      'modal.created.title': 'Account aangemaakt 🎉',
+      'modal.created.text': '{name} kan nu inloggen met {email} en dit tijdelijke wachtwoord:',
+      'modal.temppw.note': 'Tijdelijk wachtwoord — deel dit veilig. Bij de eerste login moet het gewijzigd worden.',
+      'modal.edit.title': '{name} bewerken', 'modal.status': 'Status',
+      'modal.active': 'Actief', 'modal.inactive': 'Inactief (kan niet inloggen)',
+      'ad.title': 'Overzicht', 'ad.sub': 'Zo staat je community ervoor.',
+      'ad.tile.members': 'Actieve deelnemers', 'ad.tile.coaches': 'Coaches',
+      'ad.tile.checkins': 'Check-ins deze week', 'ad.tile.active': 'Actief deze week', 'ad.of': 'van {n}',
+      'ad.unassigned': '⚠️ {n} deelnemer(s) zonder coach.', 'ad.unassigned.link': 'Koppel ze via',
+      'ad.attention': 'Aandacht nodig', 'ad.attention.sub': 'Deelnemers zonder check-in in de afgelopen 7 dagen',
+      'ad.attention.empty': 'Iedereen heeft recent ingecheckt!',
+      'ad.members.title': 'Deelnemers', 'ad.members.sub': '{n} deelnemers in totaal.',
+      'ad.members.search': 'Zoek op naam, e-mail of coach…', 'ad.members.empty': 'Geen deelnemers gevonden.',
+      'ad.team.sub': 'Coaches en beheerders van het platform.',
+      'ad.coaches.title': 'Coaches', 'ad.coaches.new': '+ Nieuwe coach',
+      'ad.coaches.empty': 'Nog geen coaches. Maak de eerste aan!',
+      'ad.admins.title': 'Beheerders', 'ad.admins.new': '+ Nieuwe beheerder',
+      'ad.admins.sub': 'Beheerders kunnen alles beheren, ook andere beheerders.',
+      'modal.newcoach': 'Nieuwe coach', 'modal.newadmin': 'Nieuwe beheerder',
+      'modal.created.coach': '{name} kan inloggen met {email}:',
+      'set.title': 'Instellingen', 'set.display': 'Weergave', 'set.lang': 'Taal',
+      'lang.nl': 'Nederlands', 'lang.en': 'Engels',
+      'you': 'jij',
+      'err.missing_credentials': 'Vul e-mail en wachtwoord in',
+      'err.invalid_credentials': 'Onjuiste inloggegevens',
+      'err.not_logged_in': 'Je bent niet (meer) ingelogd',
+      'err.forbidden': 'Geen toegang',
+      'err.password_too_short': 'Nieuw wachtwoord moet minimaal 8 tekens zijn',
+      'err.wrong_current_password': 'Het huidige wachtwoord klopt niet — controleer het en probeer opnieuw',
+      'err.invalid_date': 'Ongeldige datum',
+      'err.member_not_found': 'Deelnemer niet gevonden',
+      'err.empty_note': 'Notitie is leeg',
+      'err.invalid_role': 'Ongeldige rol',
+      'err.user_not_found': 'Gebruiker niet gevonden',
+      'err.cannot_deactivate_self': 'Je kunt jezelf niet deactiveren',
+      'err.email_in_use': 'E-mailadres is al in gebruik',
+      'err.name_email_required': 'Naam en geldig e-mailadres zijn verplicht',
+      'err.generic': 'Er ging iets mis',
+    },
+    en: {
+      'tagline': 'Your progress, together with your coach.',
+      'login.email': 'Email address', 'login.password': 'Password', 'login.submit': 'Sign in',
+      'login.placeholder.email': 'you@example.com',
+      'force.title': 'New password',
+      'force.intro': 'Welcome {name}! Please choose your own password to continue.',
+      'force.current': 'Current (temporary) password', 'force.next': 'New password',
+      'force.hint': 'At least 8 characters.', 'force.submit': 'Save and continue',
+      'force.success': 'Password set — welcome!',
+      'nav.overview': 'Overview', 'nav.checkin': 'Check-in', 'nav.history': 'History',
+      'nav.profile': 'Profile', 'nav.members': 'Members', 'nav.settings': 'Settings',
+      'nav.team': 'Team',
+      'role.admin': 'Administrator', 'role.coach': 'Coach', 'role.member': 'Member',
+      'btn.logout': 'Sign out', 'btn.cancel': 'Cancel', 'btn.save': 'Save',
+      'btn.view': 'View', 'btn.edit': 'Edit', 'btn.delete': 'Delete',
+      'btn.done': 'Done', 'btn.create': 'Create account', 'btn.resetpw': 'Reset password',
+      'btn.copy': 'Copy password',
+      'loading': 'Loading…',
+      'toast.copied': 'Copied to clipboard', 'toast.copyfail': 'Copying failed — please note it down manually',
+      'toast.saved': 'Saved ✔',
+      'theme.dark': 'Dark theme', 'theme.light': 'Light theme', 'theme.auto': 'Theme follows system',
+      'theme.switch': 'Switch theme (light / dark / system)',
+      'greet.night': 'Good night', 'greet.morning': 'Good morning', 'greet.afternoon': 'Good afternoon', 'greet.evening': 'Good evening',
+      'home.sub.some': 'You have completed {n} check-in(s). Keep it up!',
+      'home.sub.none': 'Time for your first check-in!',
+      'home.newcheckin': '+ New check-in',
+      'home.intake.title': 'Complete your profile',
+      'home.intake.sub': 'Fill in your starting weight and goal so we can show your progress.',
+      'home.intake.btn': 'Fill in profile',
+      'home.progress.title': 'On your way to your goal', 'home.progress.sub': 'From {a} to {b} kg',
+      'tile.weight': 'Current weight', 'tile.togo': 'To go', 'tile.energy': 'Energy (14 days)',
+      'tile.checkins': 'Check-ins', 'tile.goalweight': 'Goal weight', 'tile.energy.short': 'Energy (14 days)',
+      'tile.lastcheckin': 'Last check-in',
+      'chart.weight': 'Weight', 'chart.weight.sub': 'in kilograms',
+      'chart.energy': 'Energy', 'chart.energy.sub': 'score from 1 to 10',
+      'chart.goal': 'goal', 'chart.empty': 'No measurements yet — complete your first check-in.',
+      'home.recent': 'Recent check-ins', 'home.viewall': 'View all',
+      'home.nocheckins': 'No check-ins yet.',
+      'home.coach': 'Your coach', 'home.coach.msg': 'Questions about your progress? Feel free to get in touch.',
+      'home.nocoach': 'No coach has been linked to you yet.',
+      'energy.label': 'energy',
+      'ci.title': 'Check-in',
+      'ci.sub': 'Tell us how you are doing today. Only the date is required — everything else is optional.',
+      'ci.date': 'Date', 'ci.weight': 'Weight (kg)', 'ci.energy': 'Energy today',
+      'ci.energy.hint': '1 = exhausted · 10 = bursting with energy',
+      'ci.mood': 'Mood', 'ci.sleep': 'Sleep (hours)', 'ci.water': 'Water (litres)',
+      'ci.notes': 'Notes', 'ci.notes.ph': 'How did today go? Anything special?',
+      'ci.submit': 'Save check-in', 'ci.saved': 'Check-in saved 💪',
+      'ci.ph.weight': 'e.g. 82.5', 'ci.ph.sleep': 'e.g. 7.5', 'ci.ph.water': 'e.g. 2',
+      'hist.title': 'History', 'hist.sub': 'All your check-ins in one place.',
+      'hist.confirm.title': 'Delete check-in',
+      'hist.confirm.text': 'Are you sure you want to delete this check-in?',
+      'hist.deleted': 'Check-in deleted',
+      'th.date': 'Date', 'th.weight': 'Weight', 'th.energy': 'Energy', 'th.sleep': 'Sleep',
+      'th.water': 'Water', 'th.mood': 'Mood', 'th.notes': 'Notes', 'th.status': 'Status',
+      'th.member': 'Member', 'th.coach': 'Coach', 'th.lastcheckin': 'Last check-in',
+      'th.members': 'Members', 'th.admin': 'Administrator',
+      'pr.title': 'My profile', 'pr.sub': 'Your coach uses this information to support you well.',
+      'pr.birthdate': 'Date of birth', 'pr.height': 'Height (cm)', 'pr.startweight': 'Starting weight (kg)',
+      'pr.goalweight': 'Goal weight (kg)', 'pr.activity': 'How active are you?', 'pr.choose': 'Select an option',
+      'pr.goal': 'What is your goal?', 'pr.goal.ph': 'e.g. get fitter, lose weight…',
+      'pr.health': 'Health & particulars', 'pr.health.ph': 'Allergies, injuries, medication… (optional)',
+      'pr.submit': 'Save profile', 'pr.saved': 'Profile saved ✔',
+      'act.low': 'Not very active', 'act.light': 'Lightly active', 'act.medium': 'Moderately active',
+      'act.high': 'Very active', 'act.athlete': 'Athlete',
+      'pw.title': 'Change password', 'pw.current': 'Current password', 'pw.next': 'New password',
+      'pw.submit': 'Change password', 'pw.changed': 'Password changed ✔',
+      'badge.none': 'no check-in yet', 'badge.active': 'active', 'badge.silent': 'quiet for {n} days',
+      'badge.inactive': 'inactive', 'badge.nocoach': 'no coach',
+      'co.title': 'My members', 'co.sub': '{n} member(s) linked to you.',
+      'co.new': '+ New member', 'co.search': 'Search by name or email…',
+      'co.empty': 'No members yet. Add your first member!',
+      'co.back': '← Back to overview', 'co.since': 'member since {d}',
+      'co.intake': 'Intake', 'co.intake.empty': 'Intake has not been filled in yet.',
+      'co.notes': 'Coach notes', 'co.notes.sub': 'Only visible to coaches',
+      'co.notes.ph': 'New note…', 'co.notes.empty': 'No notes yet.',
+      'co.allcheckins': 'All check-ins',
+      'co.resetpw.title': 'Reset password',
+      'co.resetpw.text': '{name} will get a new temporary password and must change it at the next sign-in.',
+      'co.resetpw.btn': 'Reset', 'co.resetpw.result': 'New temporary password',
+      'modal.newmember': 'New member', 'modal.name': 'Name', 'modal.name.ph': 'First and last name',
+      'modal.email.ph': 'member@example.com', 'modal.coach': 'Link to coach', 'modal.nocoach': '— No coach —',
+      'modal.created.title': 'Account created 🎉',
+      'modal.created.text': '{name} can now sign in with {email} and this temporary password:',
+      'modal.temppw.note': 'Temporary password — share it safely. It must be changed at first sign-in.',
+      'modal.edit.title': 'Edit {name}', 'modal.status': 'Status',
+      'modal.active': 'Active', 'modal.inactive': 'Inactive (cannot sign in)',
+      'ad.title': 'Overview', 'ad.sub': 'How your community is doing.',
+      'ad.tile.members': 'Active members', 'ad.tile.coaches': 'Coaches',
+      'ad.tile.checkins': 'Check-ins this week', 'ad.tile.active': 'Active this week', 'ad.of': 'of {n}',
+      'ad.unassigned': '⚠️ {n} member(s) without a coach.', 'ad.unassigned.link': 'Link them via',
+      'ad.attention': 'Needs attention', 'ad.attention.sub': 'Members without a check-in in the past 7 days',
+      'ad.attention.empty': 'Everyone has checked in recently!',
+      'ad.members.title': 'Members', 'ad.members.sub': '{n} members in total.',
+      'ad.members.search': 'Search by name, email or coach…', 'ad.members.empty': 'No members found.',
+      'ad.team.sub': 'Coaches and administrators of the platform.',
+      'ad.coaches.title': 'Coaches', 'ad.coaches.new': '+ New coach',
+      'ad.coaches.empty': 'No coaches yet. Create the first one!',
+      'ad.admins.title': 'Administrators', 'ad.admins.new': '+ New administrator',
+      'ad.admins.sub': 'Administrators can manage everything, including other administrators.',
+      'modal.newcoach': 'New coach', 'modal.newadmin': 'New administrator',
+      'modal.created.coach': '{name} can sign in with {email}:',
+      'set.title': 'Settings', 'set.display': 'Appearance', 'set.lang': 'Language',
+      'lang.nl': 'Dutch', 'lang.en': 'English',
+      'you': 'you',
+      'err.missing_credentials': 'Please enter email and password',
+      'err.invalid_credentials': 'Incorrect email or password',
+      'err.not_logged_in': 'You are not signed in (anymore)',
+      'err.forbidden': 'No access',
+      'err.password_too_short': 'New password must be at least 8 characters',
+      'err.wrong_current_password': 'The current password is incorrect — please check it and try again',
+      'err.invalid_date': 'Invalid date',
+      'err.member_not_found': 'Member not found',
+      'err.empty_note': 'Note is empty',
+      'err.invalid_role': 'Invalid role',
+      'err.user_not_found': 'User not found',
+      'err.cannot_deactivate_self': 'You cannot deactivate yourself',
+      'err.email_in_use': 'Email address is already in use',
+      'err.name_email_required': 'Name and a valid email address are required',
+      'err.generic': 'Something went wrong',
+    },
+  };
+
+  let LANG = localStorage.getItem('hf-lang') === 'en' ? 'en' : 'nl';
+  document.documentElement.lang = LANG;
+
+  function t(key, vars) {
+    let s = STR[LANG][key] ?? STR.nl[key] ?? key;
+    if (vars) for (const k in vars) s = s.replaceAll(`{${k}}`, vars[k]);
+    return s;
+  }
+  const tErr = (raw) => STR[LANG]['err.' + raw] ? t('err.' + raw) : (STR.nl['err.' + raw] ? t('err.' + raw) : (raw && raw.length < 80 && !raw.includes('_') ? raw : t('err.generic')));
+
+  function setLang(l) {
+    LANG = l === 'en' ? 'en' : 'nl';
+    localStorage.setItem('hf-lang', LANG);
+    document.documentElement.lang = LANG;
+    route();
+  }
+
+  // Activiteitsniveau: opgeslagen als code; oude data kan nog Nederlandse tekst zijn.
+  const ACTIVITY_CODES = ['low', 'light', 'medium', 'high', 'athlete'];
+  const LEGACY_ACTIVITY = {
+    'Weinig actief': 'low', 'Licht actief': 'light', 'Gemiddeld actief': 'medium',
+    'Erg actief': 'high', 'Topsporter': 'athlete',
+  };
+  const activityCode = (v) => ACTIVITY_CODES.includes(v) ? v : (LEGACY_ACTIVITY[v] || null);
+  const activityLabel = (v) => { const c = activityCode(v); return c ? t('act.' + c) : (v || '—'); };
+
   // ---------- thema ----------
   function applyTheme() {
-    const t = localStorage.getItem('hf-theme');
-    if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    const th = localStorage.getItem('hf-theme');
+    if (th === 'light' || th === 'dark') document.documentElement.dataset.theme = th;
     else delete document.documentElement.dataset.theme;
   }
   function cycleTheme() {
@@ -16,7 +291,7 @@
     const next = cur === 'dark' ? 'light' : cur === 'light' ? null : 'dark';
     if (next) localStorage.setItem('hf-theme', next); else localStorage.removeItem('hf-theme');
     applyTheme();
-    toast(next === 'dark' ? 'Donker thema' : next === 'light' ? 'Licht thema' : 'Thema volgt systeem');
+    toast(next === 'dark' ? t('theme.dark') : next === 'light' ? t('theme.light') : t('theme.auto'));
   }
   applyTheme();
 
@@ -25,7 +300,7 @@
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   const fmtNum = (v, d = 1) => v == null ? '—' :
-    Number(v).toLocaleString('nl-NL', { minimumFractionDigits: 0, maximumFractionDigits: d });
+    Number(v).toLocaleString(LANG === 'en' ? 'en-US' : 'nl-NL', { minimumFractionDigits: 0, maximumFractionDigits: d });
 
   const fmtDate = (iso) => iso ? HFCharts.fmtDateLong(iso.slice(0, 10)) : '—';
   const today = () => new Date().toISOString().slice(0, 10);
@@ -41,22 +316,26 @@
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      if (res.status === 401 && path !== '/login' && path !== '/me') {
+      // Alleen bij écht sessieverlies terug naar het loginscherm — nooit bij
+      // login- of wachtwoordfouten, anders raakt de gebruiker zijn context kwijt.
+      if (res.status === 401 && !['/login', '/me', '/password'].includes(path)) {
         state.user = null; location.hash = '#/login'; route();
       }
-      throw new Error(data.error || 'Er ging iets mis');
+      const err = new Error(tErr(data.error));
+      err.code = data.error;
+      throw err;
     }
     return data;
   }
 
   function toast(msg, isError = false) {
     const root = document.getElementById('toast-root');
-    const t = document.createElement('div');
-    t.className = 'toast' + (isError ? ' error' : '');
-    t.textContent = msg;
-    root.appendChild(t);
-    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; }, 2600);
-    setTimeout(() => t.remove(), 3000);
+    const el = document.createElement('div');
+    el.className = 'toast' + (isError ? ' error' : '');
+    el.textContent = msg;
+    root.appendChild(el);
+    setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; }, 2600);
+    setTimeout(() => el.remove(), 3000);
   }
 
   function modal(html) {
@@ -73,14 +352,14 @@
     document.removeEventListener('keydown', escClose);
   }
 
-  function confirmModal(title, text, confirmLabel = 'Verwijderen') {
+  function confirmModal(title, text, confirmLabel) {
     return new Promise((resolve) => {
       const m = modal(`
         <h3>${esc(title)}</h3>
         <p style="color:var(--ink-2)">${esc(text)}</p>
         <div class="modal-actions">
-          <button class="btn ghost" data-x="no">Annuleren</button>
-          <button class="btn danger" data-x="yes">${esc(confirmLabel)}</button>
+          <button class="btn ghost" data-x="no">${t('btn.cancel')}</button>
+          <button class="btn danger" data-x="yes">${esc(confirmLabel || t('btn.delete'))}</button>
         </div>`);
       m.querySelector('[data-x="no"]').onclick = () => { closeModal(); resolve(false); };
       m.querySelector('[data-x="yes"]').onclick = () => { closeModal(); resolve(true); };
@@ -88,17 +367,27 @@
   }
 
   async function copyText(text) {
-    try { await navigator.clipboard.writeText(text); toast('Gekopieerd naar klembord'); }
-    catch { toast('Kopiëren niet gelukt — noteer het handmatig', true); }
+    try { await navigator.clipboard.writeText(text); toast(t('toast.copied')); }
+    catch { toast(t('toast.copyfail'), true); }
   }
 
   function passwordRevealHTML(password) {
     return `
       <div class="password-reveal">
         <code>${esc(password)}</code>
-        <p>Tijdelijk wachtwoord — deel dit veilig. Bij de eerste login moet het gewijzigd worden.</p>
+        <p>${t('modal.temppw.note')}</p>
       </div>
-      <button class="btn ghost" data-copy>Kopieer wachtwoord</button>`;
+      <button class="btn ghost" data-copy>${t('btn.copy')}</button>`;
+  }
+
+  function tempPasswordModal(res, onDone) {
+    const m = modal(`
+      <h3>${t('modal.created.title')}</h3>
+      <p style="color:var(--ink-2)">${t('modal.created.text', { name: esc(res.user.name), email: `<b>${esc(res.user.email)}</b>` })}</p>
+      ${passwordRevealHTML(res.password)}
+      <div class="modal-actions"><button class="btn" data-done>${t('btn.done')}</button></div>`);
+    m.querySelector('[data-copy]').onclick = () => copyText(res.password);
+    m.querySelector('[data-done]').onclick = () => { closeModal(); if (onDone) onDone(); };
   }
 
   // ---------- iconen ----------
@@ -112,6 +401,8 @@
     gear: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M5.5 18.5l2.1-2.1M16.4 7.6l2.1-2.1"/></svg>',
     out: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg>',
     moon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 13A8.5 8.5 0 1 1 11 3a7 7 0 0 0 10 10z"/></svg>',
+    globe: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z"/></svg>',
+    shield: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 4.5 3 8.5 7 10 4-1.5 7-5.5 7-10V6l-7-3z"/></svg>',
     leaf: '<svg width="20" height="20" viewBox="0 0 32 32"><path d="M16 25c-5-2-8-6-8-11 0-3 2-6 5-7 4-1 8 1 10 5-3-1-6 0-8 2s-3 5-2 8c.8 1.6 2 2.6 3 3z" fill="#17240a"/></svg>',
   };
   const logoHTML = `<div class="logo"><div class="logo-mark">${I.leaf}</div><div class="logo-name">Herba<span>Forms</span></div></div>`;
@@ -120,41 +411,42 @@
   function navItems() {
     const r = state.user.role;
     if (r === 'member') return [
-      { href: '#/', label: 'Overzicht', icon: I.home },
-      { href: '#/checkin', label: 'Check-in', icon: I.plus },
-      { href: '#/historie', label: 'Historie', icon: I.clock },
-      { href: '#/profiel', label: 'Profiel', icon: I.user },
+      { href: '#/', label: t('nav.overview'), icon: I.home },
+      { href: '#/checkin', label: t('nav.checkin'), icon: I.plus },
+      { href: '#/historie', label: t('nav.history'), icon: I.clock },
+      { href: '#/profiel', label: t('nav.profile'), icon: I.user },
     ];
     if (r === 'coach') return [
-      { href: '#/', label: 'Deelnemers', icon: I.users },
-      { href: '#/instellingen', label: 'Instellingen', icon: I.gear },
+      { href: '#/', label: t('nav.members'), icon: I.users },
+      { href: '#/instellingen', label: t('nav.settings'), icon: I.gear },
     ];
     return [
-      { href: '#/', label: 'Overzicht', icon: I.chart },
-      { href: '#/deelnemers', label: 'Deelnemers', icon: I.users },
-      { href: '#/coaches', label: 'Coaches', icon: I.user },
-      { href: '#/instellingen', label: 'Instellingen', icon: I.gear },
+      { href: '#/', label: t('nav.overview'), icon: I.chart },
+      { href: '#/deelnemers', label: t('nav.members'), icon: I.users },
+      { href: '#/team', label: t('nav.team'), icon: I.shield },
+      { href: '#/instellingen', label: t('nav.settings'), icon: I.gear },
     ];
   }
 
   function shell(contentHTML) {
     const items = navItems();
     const cur = location.hash || '#/';
-    const link = (n, cls) =>
-      `<a href="${n.href}" class="${cls}${cur === n.href ? ' active' : ''}">${n.icon}<span>${n.label}</span></a>`;
+    const link = (n) =>
+      `<a href="${n.href}" class="${cur === n.href ? 'active' : ''}">${n.icon}<span>${esc(n.label)}</span></a>`;
     $app.innerHTML = `
       <div class="shell">
         <aside class="sidebar">
           ${logoHTML}
-          <nav class="nav">${items.map((n) => link(n, '')).join('')}</nav>
+          <nav class="nav">${items.map(link).join('')}</nav>
           <div class="sidebar-footer">
             <div class="user-chip">
               <div class="avatar">${esc(initials(state.user.name))}</div>
-              <div><b>${esc(state.user.name)}</b><small>${roleLabel(state.user.role)}</small></div>
+              <div><b>${esc(state.user.name)}</b><small>${t('role.' + state.user.role)}</small></div>
             </div>
             <div class="sidebar-actions">
-              <button class="icon-btn" data-theme-toggle title="Thema wisselen">${I.moon}</button>
-              <button class="icon-btn" data-logout>${I.out} Uitloggen</button>
+              <button class="icon-btn" data-theme-toggle title="${t('theme.switch')}">${I.moon}</button>
+              <button class="icon-btn" data-lang-toggle title="${t('set.lang')}">${I.globe} ${LANG === 'nl' ? 'EN' : 'NL'}</button>
+              <button class="icon-btn" data-logout title="${t('btn.logout')}">${I.out}</button>
             </div>
           </div>
         </aside>
@@ -162,20 +454,20 @@
           <header class="topbar">
             ${logoHTML}
             <div class="topbar-actions">
-              <button class="icon-btn" data-theme-toggle title="Thema">${I.moon}</button>
-              <button class="icon-btn" data-logout title="Uitloggen">${I.out}</button>
+              <button class="icon-btn" data-theme-toggle title="${t('theme.switch')}">${I.moon}</button>
+              <button class="icon-btn" data-lang-toggle title="${t('set.lang')}">${LANG === 'nl' ? 'EN' : 'NL'}</button>
+              <button class="icon-btn" data-logout title="${t('btn.logout')}">${I.out}</button>
             </div>
           </header>
           <main class="main"><div class="main-inner">${contentHTML}</div></main>
-          <nav class="tabbar">${items.map((n) => link(n, '')).join('')}</nav>
+          <nav class="tabbar">${items.map(link).join('')}</nav>
         </div>
       </div>`;
     $app.querySelectorAll('[data-logout]').forEach((b) => b.onclick = logout);
     $app.querySelectorAll('[data-theme-toggle]').forEach((b) => b.onclick = cycleTheme);
+    $app.querySelectorAll('[data-lang-toggle]').forEach((b) => b.onclick = () => setLang(LANG === 'nl' ? 'en' : 'nl'));
     return $app.querySelector('.main-inner');
   }
-
-  const roleLabel = (r) => ({ admin: 'Beheerder', coach: 'Coach', member: 'Deelnemer' }[r] || r);
 
   async function logout() {
     await api('/logout', { method: 'POST' }).catch(() => {});
@@ -217,6 +509,39 @@
 
   const MOODS = ['😞', '😕', '😐', '🙂', '😄'];
 
+  function chartOpts() {
+    return { goalLabel: t('chart.goal'), emptyText: t('chart.empty') };
+  }
+
+  function renderCharts(root, checkins, goal) {
+    HFCharts.lineChart(root.querySelector('#chart-weight'), {
+      points: weightSeries(checkins), colorVar: '--series-weight', unit: 'kg',
+      name: t('chart.weight'), goal, decimals: 1, ...chartOpts(),
+    });
+    HFCharts.lineChart(root.querySelector('#chart-energy'), {
+      points: energySeries(checkins), colorVar: '--series-energy', unit: '/10',
+      name: t('chart.energy'), decimals: 0, yMin: 0, yMax: 11, ...chartOpts(),
+    });
+  }
+
+  const chartCardsHTML = () => `
+      <div class="grid-2">
+        <div class="card"><div class="card-head"><div>
+          <div class="card-title">${t('chart.weight')}</div><div class="card-sub">${t('chart.weight.sub')}</div></div></div>
+          <div id="chart-weight"></div></div>
+        <div class="card"><div class="card-head"><div>
+          <div class="card-title">${t('chart.energy')}</div><div class="card-sub">${t('chart.energy.sub')}</div></div></div>
+          <div id="chart-energy"></div></div>
+      </div>`;
+
+  const langToggleHTML = () => `
+    <div class="section-tabs" style="justify-content:center">
+      <button data-lang="nl" class="${LANG === 'nl' ? 'on' : ''}">🇳🇱 ${t('lang.nl')}</button>
+      <button data-lang="en" class="${LANG === 'en' ? 'on' : ''}">🇬🇧 ${t('lang.en')}</button>
+    </div>`;
+  const bindLangToggle = (root) =>
+    root.querySelectorAll('[data-lang]').forEach((b) => b.onclick = () => setLang(b.dataset.lang));
+
   // ============================================================
   // Views
   // ============================================================
@@ -224,27 +549,31 @@
   function loginView(err = '') {
     $app.innerHTML = `
       <div class="login-wrap">
+        <div style="display:flex;flex-direction:column;gap:14px;width:min(410px,100%)">
         <div class="login-card">
           <div class="login-brand">
             <div class="logo-mark">${I.leaf}</div>
             <h1>Herba<span style="color:var(--brand)">Forms</span></h1>
-            <p>Jouw voortgang, samen met je coach.</p>
+            <p>${t('tagline')}</p>
           </div>
           ${err ? `<div class="form-error">${esc(err)}</div>` : ''}
-          <form id="login-form" class="field-stack" style="display:flex;flex-direction:column;gap:14px">
-            <div class="field"><label>E-mailadres</label>
-              <input class="input" name="email" type="email" required autocomplete="email" placeholder="jij@voorbeeld.nl"></div>
-            <div class="field"><label>Wachtwoord</label>
+          <form id="login-form" style="display:flex;flex-direction:column;gap:14px">
+            <div class="field"><label>${t('login.email')}</label>
+              <input class="input" name="email" type="email" required autocomplete="email" placeholder="${t('login.placeholder.email')}"></div>
+            <div class="field"><label>${t('login.password')}</label>
               <input class="input" name="password" type="password" required autocomplete="current-password" placeholder="••••••••"></div>
-            <button class="btn big" type="submit">Inloggen</button>
+            <button class="btn big" type="submit">${t('login.submit')}</button>
           </form>
         </div>
+        ${langToggleHTML()}
+        </div>
       </div>`;
+    bindLangToggle($app);
     document.getElementById('login-form').onsubmit = async (e) => {
       e.preventDefault();
       const f = new FormData(e.target);
       try {
-        const { user } = await api('/login', { method: 'POST', body: { email: f.get('email'), password: f.get('password') } });
+        const { user } = await api('/login', { method: 'POST', body: { email: f.get('email'), password: String(f.get('password')) } });
         state.user = user;
         if (location.hash && location.hash !== '#/') location.hash = '#/';
         else route();
@@ -255,33 +584,44 @@
   function forcePasswordView() {
     $app.innerHTML = `
       <div class="login-wrap">
+        <div style="display:flex;flex-direction:column;gap:14px;width:min(410px,100%)">
         <div class="login-card">
           <div class="login-brand">
             <div class="logo-mark">${I.leaf}</div>
-            <h1>Nieuw wachtwoord</h1>
-            <p>Welkom ${esc(state.user.name)}! Kies eerst een eigen wachtwoord om verder te gaan.</p>
+            <h1>${t('force.title')}</h1>
+            <p>${t('force.intro', { name: esc(state.user.name) })}</p>
           </div>
           <div id="pw-err"></div>
           <form id="pw-form" style="display:flex;flex-direction:column;gap:14px">
-            <div class="field"><label>Huidig (tijdelijk) wachtwoord</label>
+            <div class="field"><label>${t('force.current')}</label>
               <input class="input" name="current" type="password" required autocomplete="current-password"></div>
-            <div class="field"><label>Nieuw wachtwoord</label>
+            <div class="field"><label>${t('force.next')}</label>
               <input class="input" name="next" type="password" required minlength="8" autocomplete="new-password">
-              <span class="hint">Minimaal 8 tekens.</span></div>
-            <button class="btn big" type="submit">Opslaan en doorgaan</button>
+              <span class="hint">${t('force.hint')}</span></div>
+            <button class="btn big" type="submit">${t('force.submit')}</button>
           </form>
         </div>
+        ${langToggleHTML()}
+        </div>
       </div>`;
+    bindLangToggle($app);
     document.getElementById('pw-form').onsubmit = async (e) => {
       e.preventDefault();
       const f = new FormData(e.target);
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.disabled = true;
       try {
-        await api('/password', { method: 'POST', body: { current: f.get('current'), next: f.get('next') } });
+        await api('/password', { method: 'POST', body: {
+          current: String(f.get('current')), next: String(f.get('next')).trim(),
+        }});
         state.user.must_change_password = false;
-        toast('Wachtwoord ingesteld — welkom!');
+        toast(t('force.success'));
         route();
       } catch (err) {
-        document.getElementById('pw-err').innerHTML = `<div class="form-error">${esc(err.message)}</div>`;
+        btn.disabled = false;
+        const box = document.getElementById('pw-err');
+        if (box) box.innerHTML = `<div class="form-error">${esc(err.message)}</div>`;
+        else toast(err.message, true);
       }
     };
   }
@@ -289,29 +629,29 @@
   // ---------- Deelnemer ----------
 
   async function memberHome() {
-    const root = shell('<div class="skeleton">Laden…</div>');
+    const root = shell(`<div class="skeleton">${t('loading')}</div>`);
     const data = await api('/member/dashboard');
     state.profile = data.profile;
     const { profile, checkins, coach } = data;
     const s = memberStats(profile, checkins);
     const hour = new Date().getHours();
-    const greet = hour < 6 ? 'Goedenacht' : hour < 12 ? 'Goedemorgen' : hour < 18 ? 'Goedemiddag' : 'Goedenavond';
+    const greet = hour < 6 ? t('greet.night') : hour < 12 ? t('greet.morning') : hour < 18 ? t('greet.afternoon') : t('greet.evening');
     const first = state.user.name.split(' ')[0];
 
     const intakePrompt = (!profile || !profile.completed) ? `
       <div class="card" style="border-color:var(--accent);background:var(--accent-soft)">
         <div class="card-head" style="margin-bottom:8px"><div>
-          <div class="card-title">Maak je profiel compleet</div>
-          <div class="card-sub">Vul je startgewicht en doel in, dan kunnen we je voortgang laten zien.</div>
+          <div class="card-title">${t('home.intake.title')}</div>
+          <div class="card-sub">${t('home.intake.sub')}</div>
         </div></div>
-        <a class="btn" href="#/profiel">Profiel invullen</a>
+        <a class="btn" href="#/profiel">${t('home.intake.btn')}</a>
       </div>` : '';
 
     const progressCard = s.progress != null ? `
       <div class="card">
         <div class="card-head" style="margin-bottom:10px"><div>
-          <div class="card-title">Op weg naar je doel</div>
-          <div class="card-sub">Van ${fmtNum(s.start)} naar ${fmtNum(s.goal)} kg</div>
+          <div class="card-title">${t('home.progress.title')}</div>
+          <div class="card-sub">${t('home.progress.sub', { a: fmtNum(s.start), b: fmtNum(s.goal) })}</div>
         </div><b style="font-size:18px">${Math.round(s.progress)}%</b></div>
         <div class="progress-track"><div class="progress-fill" style="width:${s.progress}%"></div></div>
       </div>` : '';
@@ -321,89 +661,75 @@
     root.innerHTML = `
       <div class="page-head"><div>
         <h1>${greet}, ${esc(first)} 👋</h1>
-        <p class="sub">${s.count ? `Je hebt ${s.count} check-in${s.count === 1 ? '' : 's'} gedaan. Blijf zo doorgaan!` : 'Tijd voor je eerste check-in!'}</p>
-      </div><a class="btn" href="#/checkin">+ Nieuwe check-in</a></div>
+        <p class="sub">${s.count ? t('home.sub.some', { n: s.count }) : t('home.sub.none')}</p>
+      </div><a class="btn" href="#/checkin">${t('home.newcheckin')}</a></div>
       ${intakePrompt}
       <div class="tile-row">
-        <div class="tile"><span class="tile-label">Huidig gewicht</span>
+        <div class="tile"><span class="tile-label">${t('tile.weight')}</span>
           <span class="tile-value">${fmtNum(s.current)}<small>kg</small></span>
           ${s.delta != null ? deltaHTML(s.delta, { goodWhenDown: s.goal == null || s.goal < s.start }) : ''}</div>
-        <div class="tile"><span class="tile-label">Nog te gaan</span>
+        <div class="tile"><span class="tile-label">${t('tile.togo')}</span>
           <span class="tile-value">${s.goal != null && s.current != null ? fmtNum(Math.abs(s.current - s.goal)) + '<small>kg</small>' : '—'}</span></div>
-        <div class="tile"><span class="tile-label">Energie (14 dagen)</span>
+        <div class="tile"><span class="tile-label">${t('tile.energy')}</span>
           <span class="tile-value">${s.energyAvg != null ? fmtNum(s.energyAvg, 1) + '<small>/10</small>' : '—'}</span></div>
-        <div class="tile"><span class="tile-label">Check-ins</span>
+        <div class="tile"><span class="tile-label">${t('tile.checkins')}</span>
           <span class="tile-value">${s.count}</span></div>
       </div>
       ${progressCard}
-      <div class="grid-2">
-        <div class="card"><div class="card-head"><div>
-          <div class="card-title">Gewicht</div><div class="card-sub">in kilogram</div></div></div>
-          <div id="chart-weight"></div></div>
-        <div class="card"><div class="card-head"><div>
-          <div class="card-title">Energie</div><div class="card-sub">score van 1 tot 10</div></div></div>
-          <div id="chart-energy"></div></div>
-      </div>
+      ${chartCardsHTML()}
       <div class="grid-2">
         <div class="card">
-          <div class="card-head"><div><div class="card-title">Laatste check-ins</div></div>
-            <a href="#/historie" style="font-size:13.5px;font-weight:650">Alles bekijken</a></div>
+          <div class="card-head"><div><div class="card-title">${t('home.recent')}</div></div>
+            <a href="#/historie" style="font-size:13.5px;font-weight:650">${t('home.viewall')}</a></div>
           ${recent.length ? `<div class="list">${recent.map((c) => `
             <div class="list-item">
               <div><b style="font-size:14px">${fmtDate(c.date)}</b>
-                <small style="display:block;color:var(--ink-3)">${c.mood ? MOODS[c.mood - 1] + ' · ' : ''}${c.energy != null ? 'energie ' + c.energy + '/10' : ''}</small></div>
+                <small style="display:block;color:var(--ink-3)">${c.mood ? MOODS[c.mood - 1] + ' · ' : ''}${c.energy != null ? t('energy.label') + ' ' + c.energy + '/10' : ''}</small></div>
               <b>${c.weight != null ? fmtNum(c.weight) + ' kg' : '—'}</b>
             </div>`).join('')}</div>`
-          : '<div class="empty"><p>Nog geen check-ins.</p></div>'}
+          : `<div class="empty"><p>${t('home.nocheckins')}</p></div>`}
         </div>
         <div class="card">
-          <div class="card-head"><div><div class="card-title">Jouw coach</div></div></div>
+          <div class="card-head"><div><div class="card-title">${t('home.coach')}</div></div></div>
           ${coach ? `<div class="person-row">
               <div class="avatar">${esc(initials(coach.name))}</div>
               <div class="who"><b>${esc(coach.name)}</b><small>${esc(coach.email)}</small></div>
             </div>
-            <p style="color:var(--ink-2);font-size:13.5px;margin-top:12px">Vragen over je voortgang? Neem gerust contact op.</p>`
-          : '<div class="empty"><p>Er is nog geen coach aan je gekoppeld.</p></div>'}
+            <p style="color:var(--ink-2);font-size:13.5px;margin-top:12px">${t('home.coach.msg')}</p>`
+          : `<div class="empty"><p>${t('home.nocoach')}</p></div>`}
         </div>
       </div>`;
 
-    HFCharts.lineChart(root.querySelector('#chart-weight'), {
-      points: weightSeries(checkins), colorVar: '--series-weight', unit: 'kg',
-      name: 'Gewicht', goal: s.goal, decimals: 1,
-    });
-    HFCharts.lineChart(root.querySelector('#chart-energy'), {
-      points: energySeries(checkins), colorVar: '--series-energy', unit: '/10',
-      name: 'Energie', decimals: 0, yMin: 0, yMax: 11,
-    });
+    renderCharts(root, checkins, s.goal);
   }
 
   async function checkinView() {
     const root = shell('');
     let energy = null, mood = null;
     root.innerHTML = `
-      <div class="page-head"><div><h1>Check-in</h1>
-        <p class="sub">Vul in hoe het vandaag met je gaat. Alleen datum is verplicht — de rest mag leeg.</p></div></div>
+      <div class="page-head"><div><h1>${t('ci.title')}</h1>
+        <p class="sub">${t('ci.sub')}</p></div></div>
       <form id="ci-form" class="card" style="display:flex;flex-direction:column;gap:18px">
         <div class="form-grid">
-          <div class="field"><label>Datum</label>
+          <div class="field"><label>${t('ci.date')}</label>
             <input class="input" type="date" name="date" value="${today()}" max="${today()}" required></div>
-          <div class="field"><label>Gewicht (kg)</label>
-            <input class="input" type="number" name="weight" step="0.1" min="20" max="400" inputmode="decimal" placeholder="bijv. 82,5"></div>
-          <div class="field full"><label>Energie vandaag</label>
+          <div class="field"><label>${t('ci.weight')}</label>
+            <input class="input" type="number" name="weight" step="0.1" min="20" max="400" inputmode="decimal" placeholder="${t('ci.ph.weight')}"></div>
+          <div class="field full"><label>${t('ci.energy')}</label>
             <div class="chips" data-energy>${Array.from({ length: 10 }, (_, i) =>
               `<button type="button" class="chip" data-v="${i + 1}">${i + 1}</button>`).join('')}</div>
-            <span class="hint">1 = uitgeput · 10 = bruisend van de energie</span></div>
-          <div class="field full"><label>Stemming</label>
+            <span class="hint">${t('ci.energy.hint')}</span></div>
+          <div class="field full"><label>${t('ci.mood')}</label>
             <div class="chips" data-mood>${MOODS.map((m, i) =>
               `<button type="button" class="chip emoji" data-v="${i + 1}">${m}</button>`).join('')}</div></div>
-          <div class="field"><label>Slaap (uren)</label>
-            <input class="input" type="number" name="sleep_hours" step="0.5" min="0" max="24" inputmode="decimal" placeholder="bijv. 7,5"></div>
-          <div class="field"><label>Water (liter)</label>
-            <input class="input" type="number" name="water_l" step="0.1" min="0" max="15" inputmode="decimal" placeholder="bijv. 2"></div>
-          <div class="field full"><label>Notities</label>
-            <textarea class="input" name="notes" placeholder="Hoe ging het vandaag? Bijzonderheden?"></textarea></div>
+          <div class="field"><label>${t('ci.sleep')}</label>
+            <input class="input" type="number" name="sleep_hours" step="0.5" min="0" max="24" inputmode="decimal" placeholder="${t('ci.ph.sleep')}"></div>
+          <div class="field"><label>${t('ci.water')}</label>
+            <input class="input" type="number" name="water_l" step="0.1" min="0" max="15" inputmode="decimal" placeholder="${t('ci.ph.water')}"></div>
+          <div class="field full"><label>${t('ci.notes')}</label>
+            <textarea class="input" name="notes" placeholder="${t('ci.notes.ph')}"></textarea></div>
         </div>
-        <button class="btn big" type="submit">Check-in opslaan</button>
+        <button class="btn big" type="submit">${t('ci.submit')}</button>
       </form>`;
 
     const bindChips = (sel, set) => {
@@ -424,14 +750,14 @@
           date: f.get('date'), weight: f.get('weight'), energy, mood,
           sleep_hours: f.get('sleep_hours'), water_l: f.get('water_l'), notes: f.get('notes'),
         }});
-        toast('Check-in opgeslagen 💪');
+        toast(t('ci.saved'));
         location.hash = '#/';
       } catch (err) { toast(err.message, true); }
     };
   }
 
   function checkinTable(checkins, { withDelete = false } = {}) {
-    if (!checkins.length) return '<div class="empty"><div class="big-emoji">🗓️</div><p>Nog geen check-ins.</p></div>';
+    if (!checkins.length) return `<div class="empty"><div class="big-emoji">🗓️</div><p>${t('home.nocheckins')}</p></div>`;
     const rows = [...checkins].reverse().map((c) => `
       <tr>
         <td><b>${fmtDate(c.date)}</b></td>
@@ -441,28 +767,28 @@
         <td class="num">${c.water_l != null ? fmtNum(c.water_l) + ' L' : '—'}</td>
         <td>${c.mood ? MOODS[c.mood - 1] : '—'}</td>
         <td style="white-space:normal;max-width:260px;color:var(--ink-2)">${esc(c.notes || '')}</td>
-        ${withDelete ? `<td><button class="btn danger small" data-del="${c.id}">Verwijder</button></td>` : ''}
+        ${withDelete ? `<td><button class="btn danger small" data-del="${c.id}">${t('btn.delete')}</button></td>` : ''}
       </tr>`).join('');
     return `<div class="table-wrap"><table class="table">
-      <thead><tr><th>Datum</th><th class="num">Gewicht</th><th class="num">Energie</th>
-      <th class="num">Slaap</th><th class="num">Water</th><th>Humeur</th><th>Notities</th>${withDelete ? '<th></th>' : ''}</tr></thead>
+      <thead><tr><th>${t('th.date')}</th><th class="num">${t('th.weight')}</th><th class="num">${t('th.energy')}</th>
+      <th class="num">${t('th.sleep')}</th><th class="num">${t('th.water')}</th><th>${t('th.mood')}</th><th>${t('th.notes')}</th>${withDelete ? '<th></th>' : ''}</tr></thead>
       <tbody>${rows}</tbody></table></div>`;
   }
 
   async function historyView() {
-    const root = shell('<div class="skeleton">Laden…</div>');
+    const root = shell(`<div class="skeleton">${t('loading')}</div>`);
     const data = await api('/member/dashboard');
     const render = (checkins) => {
       root.innerHTML = `
-        <div class="page-head"><div><h1>Historie</h1>
-          <p class="sub">Al je check-ins op een rij.</p></div>
-          <a class="btn" href="#/checkin">+ Nieuwe check-in</a></div>
+        <div class="page-head"><div><h1>${t('hist.title')}</h1>
+          <p class="sub">${t('hist.sub')}</p></div>
+          <a class="btn" href="#/checkin">${t('home.newcheckin')}</a></div>
         <div class="card">${checkinTable(checkins, { withDelete: true })}</div>`;
       root.querySelectorAll('[data-del]').forEach((b) => b.onclick = async () => {
-        if (!await confirmModal('Check-in verwijderen', 'Weet je zeker dat je deze check-in wilt verwijderen?')) return;
+        if (!await confirmModal(t('hist.confirm.title'), t('hist.confirm.text'))) return;
         try {
           const res = await api(`/member/checkins/${b.dataset.del}`, { method: 'DELETE' });
-          toast('Check-in verwijderd');
+          toast(t('hist.deleted'));
           render(res.checkins);
         } catch (err) { toast(err.message, true); }
       });
@@ -471,36 +797,37 @@
   }
 
   async function profileView() {
-    const root = shell('<div class="skeleton">Laden…</div>');
+    const root = shell(`<div class="skeleton">${t('loading')}</div>`);
     const { profile } = await api('/me');
     const p = profile || {};
+    const curAct = activityCode(p.activity_level);
     root.innerHTML = `
-      <div class="page-head"><div><h1>Mijn profiel</h1>
-        <p class="sub">Deze gegevens gebruikt je coach om je goed te begeleiden.</p></div></div>
+      <div class="page-head"><div><h1>${t('pr.title')}</h1>
+        <p class="sub">${t('pr.sub')}</p></div></div>
       <form id="pr-form" class="card" style="display:flex;flex-direction:column;gap:18px">
         <div class="form-grid">
-          <div class="field"><label>Geboortedatum</label>
+          <div class="field"><label>${t('pr.birthdate')}</label>
             <input class="input" type="date" name="birthdate" value="${esc(p.birthdate || '')}" max="${today()}"></div>
-          <div class="field"><label>Lengte (cm)</label>
+          <div class="field"><label>${t('pr.height')}</label>
             <input class="input" type="number" name="height_cm" step="0.5" min="100" max="250" value="${p.height_cm ?? ''}" inputmode="decimal"></div>
-          <div class="field"><label>Startgewicht (kg)</label>
+          <div class="field"><label>${t('pr.startweight')}</label>
             <input class="input" type="number" name="start_weight" step="0.1" min="20" max="400" value="${p.start_weight ?? ''}" inputmode="decimal"></div>
-          <div class="field"><label>Doelgewicht (kg)</label>
+          <div class="field"><label>${t('pr.goalweight')}</label>
             <input class="input" type="number" name="goal_weight" step="0.1" min="20" max="400" value="${p.goal_weight ?? ''}" inputmode="decimal"></div>
-          <div class="field"><label>Hoe actief ben je?</label>
+          <div class="field"><label>${t('pr.activity')}</label>
             <select class="input" name="activity_level">
-              ${['', 'Weinig actief', 'Licht actief', 'Gemiddeld actief', 'Erg actief', 'Topsporter']
-                .map((o) => `<option value="${o}"${p.activity_level === o ? ' selected' : ''}>${o || 'Maak een keuze'}</option>`).join('')}
+              <option value="">${t('pr.choose')}</option>
+              ${ACTIVITY_CODES.map((c) => `<option value="${c}"${curAct === c ? ' selected' : ''}>${t('act.' + c)}</option>`).join('')}
             </select></div>
-          <div class="field"><label>Wat is je doel?</label>
-            <input class="input" name="goal_text" value="${esc(p.goal_text || '')}" placeholder="bijv. fitter worden, afvallen…"></div>
-          <div class="field full"><label>Gezondheid & bijzonderheden</label>
-            <textarea class="input" name="health_notes" placeholder="Allergieën, blessures, medicatie… (optioneel)">${esc(p.health_notes || '')}</textarea></div>
+          <div class="field"><label>${t('pr.goal')}</label>
+            <input class="input" name="goal_text" value="${esc(p.goal_text || '')}" placeholder="${t('pr.goal.ph')}"></div>
+          <div class="field full"><label>${t('pr.health')}</label>
+            <textarea class="input" name="health_notes" placeholder="${t('pr.health.ph')}">${esc(p.health_notes || '')}</textarea></div>
         </div>
-        <button class="btn big" type="submit">Profiel opslaan</button>
+        <button class="btn big" type="submit">${t('pr.submit')}</button>
       </form>
       <div class="card">
-        <div class="card-head"><div><div class="card-title">Wachtwoord wijzigen</div></div></div>
+        <div class="card-head"><div><div class="card-title">${t('pw.title')}</div></div></div>
         ${passwordFormHTML()}
       </div>`;
     document.getElementById('pr-form').onsubmit = async (e) => {
@@ -511,7 +838,7 @@
       try {
         const res = await api('/member/profile', { method: 'PUT', body });
         state.profile = res.profile;
-        toast('Profiel opgeslagen ✔');
+        toast(t('pr.saved'));
         location.hash = '#/';
       } catch (err) { toast(err.message, true); }
     };
@@ -521,11 +848,11 @@
   function passwordFormHTML() {
     return `
       <form data-pwform class="form-grid">
-        <div class="field"><label>Huidig wachtwoord</label>
+        <div class="field"><label>${t('pw.current')}</label>
           <input class="input" name="current" type="password" required autocomplete="current-password"></div>
-        <div class="field"><label>Nieuw wachtwoord</label>
+        <div class="field"><label>${t('pw.next')}</label>
           <input class="input" name="next" type="password" required minlength="8" autocomplete="new-password"></div>
-        <div class="full"><button class="btn ghost" type="submit">Wachtwoord wijzigen</button></div>
+        <div class="full"><button class="btn ghost" type="submit">${t('pw.submit')}</button></div>
       </form>`;
   }
   function bindPasswordForm(root) {
@@ -535,8 +862,8 @@
       e.preventDefault();
       const f = new FormData(form);
       try {
-        await api('/password', { method: 'POST', body: { current: f.get('current'), next: f.get('next') } });
-        toast('Wachtwoord gewijzigd ✔');
+        await api('/password', { method: 'POST', body: { current: String(f.get('current')), next: String(f.get('next')).trim() } });
+        toast(t('pw.changed'));
         form.reset();
       } catch (err) { toast(err.message, true); }
     };
@@ -546,42 +873,42 @@
 
   function memberBadge(m) {
     const d = daysAgo(m.last_checkin);
-    if (d == null) return '<span class="badge">nog geen check-in</span>';
-    if (d <= 7) return '<span class="badge good">actief</span>';
-    if (d <= 14) return `<span class="badge warn">${d} dgn stil</span>`;
-    return `<span class="badge bad">${d} dgn stil</span>`;
+    if (d == null) return `<span class="badge">${t('badge.none')}</span>`;
+    if (d <= 7) return `<span class="badge good">${t('badge.active')}</span>`;
+    if (d <= 14) return `<span class="badge warn">${t('badge.silent', { n: d })}</span>`;
+    return `<span class="badge bad">${t('badge.silent', { n: d })}</span>`;
   }
 
   async function coachHome() {
-    const root = shell('<div class="skeleton">Laden…</div>');
+    const root = shell(`<div class="skeleton">${t('loading')}</div>`);
     const { members } = await api('/coach/members');
     const render = (filter = '') => {
       const list = members.filter((m) =>
         (m.name + ' ' + m.email).toLowerCase().includes(filter.toLowerCase()));
       root.innerHTML = `
-        <div class="page-head"><div><h1>Mijn deelnemers</h1>
-          <p class="sub">${members.length} deelnemer${members.length === 1 ? '' : 's'} gekoppeld aan jou.</p></div>
-          <button class="btn" data-new>+ Nieuwe deelnemer</button></div>
+        <div class="page-head"><div><h1>${t('co.title')}</h1>
+          <p class="sub">${t('co.sub', { n: members.length })}</p></div>
+          <button class="btn" data-new>${t('co.new')}</button></div>
         <div class="card">
-          <input class="input" data-search placeholder="Zoek op naam of e-mail…" value="${esc(filter)}" style="margin-bottom:14px">
+          <input class="input" data-search placeholder="${t('co.search')}" value="${esc(filter)}" style="margin-bottom:14px">
           ${list.length ? `<div class="table-wrap"><table class="table">
-            <thead><tr><th>Deelnemer</th><th>Status</th><th>Laatste check-in</th>
-            <th class="num">Gewicht</th><th class="num">Energie</th><th class="num">Check-ins</th></tr></thead>
+            <thead><tr><th>${t('th.member')}</th><th>${t('th.status')}</th><th>${t('th.lastcheckin')}</th>
+            <th class="num">${t('th.weight')}</th><th class="num">${t('th.energy')}</th><th class="num">${t('tile.checkins')}</th></tr></thead>
             <tbody>${list.map((m) => `
               <tr class="clickable" data-open="${m.id}">
                 <td><div class="person-row"><div class="avatar">${esc(initials(m.name))}</div>
                   <div class="who"><b>${esc(m.name)}</b><small>${esc(m.email)}</small></div></div></td>
-                <td>${m.active ? memberBadge(m) : '<span class="badge bad">inactief</span>'}</td>
+                <td>${m.active ? memberBadge(m) : `<span class="badge bad">${t('badge.inactive')}</span>`}</td>
                 <td>${m.last_checkin ? fmtDate(m.last_checkin) : '—'}</td>
                 <td class="num">${m.last_weight != null ? fmtNum(m.last_weight) + ' kg' : '—'}</td>
                 <td class="num">${m.last_energy != null ? m.last_energy + '/10' : '—'}</td>
                 <td class="num">${m.checkin_count}</td>
               </tr>`).join('')}</tbody></table></div>`
-          : '<div class="empty"><div class="big-emoji">🌱</div><p>Nog geen deelnemers. Voeg je eerste deelnemer toe!</p></div>'}
+          : `<div class="empty"><div class="big-emoji">🌱</div><p>${t('co.empty')}</p></div>`}
         </div>`;
       const search = root.querySelector('[data-search]');
-      search.oninput = () => { const v = search.value; render(v); root.querySelector('[data-search]').focus();
-        const s = root.querySelector('[data-search]'); s.setSelectionRange(v.length, v.length); };
+      search.oninput = () => { const v = search.value; render(v);
+        const s = root.querySelector('[data-search]'); s.focus(); s.setSelectionRange(v.length, v.length); };
       root.querySelectorAll('[data-open]').forEach((tr) => tr.onclick = () => {
         location.hash = '#/deelnemer/' + tr.dataset.open;
       });
@@ -592,18 +919,18 @@
 
   function newMemberModal(coaches = null, onDone = null) {
     const coachSelect = coaches ? `
-      <div class="field"><label>Koppel aan coach</label>
-        <select class="input" name="coach_id"><option value="">— Geen coach —</option>
+      <div class="field"><label>${t('modal.coach')}</label>
+        <select class="input" name="coach_id"><option value="">${t('modal.nocoach')}</option>
         ${coaches.filter((c) => c.active).map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></div>` : '';
     const m = modal(`
-      <h3>Nieuwe deelnemer</h3>
+      <h3>${t('modal.newmember')}</h3>
       <form data-f style="display:flex;flex-direction:column;gap:14px">
-        <div class="field"><label>Naam</label><input class="input" name="name" required placeholder="Voor- en achternaam"></div>
-        <div class="field"><label>E-mailadres</label><input class="input" name="email" type="email" required placeholder="deelnemer@voorbeeld.nl"></div>
+        <div class="field"><label>${t('modal.name')}</label><input class="input" name="name" required placeholder="${t('modal.name.ph')}"></div>
+        <div class="field"><label>${t('login.email')}</label><input class="input" name="email" type="email" required placeholder="${t('modal.email.ph')}"></div>
         ${coachSelect}
         <div class="modal-actions">
-          <button class="btn ghost" type="button" data-x>Annuleren</button>
-          <button class="btn" type="submit">Account aanmaken</button>
+          <button class="btn ghost" type="button" data-x>${t('btn.cancel')}</button>
+          <button class="btn" type="submit">${t('btn.create')}</button>
         </div>
       </form>`);
     m.querySelector('[data-x]').onclick = closeModal;
@@ -614,19 +941,13 @@
         const body = { name: f.get('name'), email: f.get('email') };
         if (coaches) body.coach_id = f.get('coach_id') || null;
         const res = await api('/coach/members', { method: 'POST', body });
-        m.innerHTML = `
-          <h3>Account aangemaakt 🎉</h3>
-          <p style="color:var(--ink-2)">${esc(res.user.name)} kan nu inloggen met <b>${esc(res.user.email)}</b> en dit tijdelijke wachtwoord:</p>
-          ${passwordRevealHTML(res.password)}
-          <div class="modal-actions"><button class="btn" data-done>Klaar</button></div>`;
-        m.querySelector('[data-copy]').onclick = () => copyText(res.password);
-        m.querySelector('[data-done]').onclick = () => { closeModal(); (onDone || route)(); };
+        tempPasswordModal(res, onDone || route);
       } catch (err) { toast(err.message, true); }
     };
   }
 
   async function memberDetailView(id) {
-    const root = shell('<div class="skeleton">Laden…</div>');
+    const root = shell(`<div class="skeleton">${t('loading')}</div>`);
     let data;
     try { data = await api('/coach/members/' + id); }
     catch (err) {
@@ -640,67 +961,55 @@
     root.innerHTML = `
       <div class="page-head">
         <div>
-          <a href="${backHref}" style="font-size:13.5px;font-weight:650">← Terug naar overzicht</a>
+          <a href="${backHref}" style="font-size:13.5px;font-weight:650">${t('co.back')}</a>
           <h1 style="margin-top:6px">${esc(user.name)}</h1>
-          <p class="sub">${esc(user.email)} · lid sinds ${fmtDate(user.created_at)}</p>
+          <p class="sub">${esc(user.email)} · ${t('co.since', { d: fmtDate(user.created_at) })}</p>
         </div>
-        <button class="btn ghost" data-resetpw>Reset wachtwoord</button>
+        <button class="btn ghost" data-resetpw>${t('btn.resetpw')}</button>
       </div>
       <div class="tile-row">
-        <div class="tile"><span class="tile-label">Huidig gewicht</span>
+        <div class="tile"><span class="tile-label">${t('tile.weight')}</span>
           <span class="tile-value">${fmtNum(s.current)}<small>kg</small></span>
           ${s.delta != null ? deltaHTML(s.delta, { goodWhenDown: s.goal == null || s.goal < s.start }) : ''}</div>
-        <div class="tile"><span class="tile-label">Doelgewicht</span>
+        <div class="tile"><span class="tile-label">${t('tile.goalweight')}</span>
           <span class="tile-value">${fmtNum(s.goal)}<small>kg</small></span></div>
-        <div class="tile"><span class="tile-label">Energie (14 dgn)</span>
+        <div class="tile"><span class="tile-label">${t('tile.energy.short')}</span>
           <span class="tile-value">${s.energyAvg != null ? fmtNum(s.energyAvg, 1) + '<small>/10</small>' : '—'}</span></div>
-        <div class="tile"><span class="tile-label">Laatste check-in</span>
+        <div class="tile"><span class="tile-label">${t('tile.lastcheckin')}</span>
           <span class="tile-value" style="font-size:18px;padding-top:6px">${checkins.length ? fmtDate(checkins[checkins.length - 1].date) : '—'}</span></div>
       </div>
-      <div class="grid-2">
-        <div class="card"><div class="card-head"><div>
-          <div class="card-title">Gewicht</div><div class="card-sub">in kilogram</div></div></div>
-          <div id="chart-weight"></div></div>
-        <div class="card"><div class="card-head"><div>
-          <div class="card-title">Energie</div><div class="card-sub">score van 1 tot 10</div></div></div>
-          <div id="chart-energy"></div></div>
-      </div>
+      ${chartCardsHTML()}
       <div class="grid-2">
         <div class="card">
-          <div class="card-head"><div><div class="card-title">Intake</div></div></div>
+          <div class="card-head"><div><div class="card-title">${t('co.intake')}</div></div></div>
           ${profile && profile.completed ? `<div class="list">
-            ${[['Geboortedatum', profile.birthdate ? fmtDate(profile.birthdate) : '—'],
-               ['Lengte', profile.height_cm ? fmtNum(profile.height_cm, 1) + ' cm' : '—'],
-               ['Startgewicht', profile.start_weight ? fmtNum(profile.start_weight) + ' kg' : '—'],
-               ['Doelgewicht', profile.goal_weight ? fmtNum(profile.goal_weight) + ' kg' : '—'],
-               ['Activiteit', profile.activity_level || '—'],
-               ['Doel', profile.goal_text || '—'],
-               ['Gezondheid', profile.health_notes || '—']]
-              .map(([k, v]) => `<div class="list-item"><small style="color:var(--ink-3);font-weight:650">${k}</small>
+            ${[[t('pr.birthdate'), profile.birthdate ? fmtDate(profile.birthdate) : '—'],
+               [t('pr.height'), profile.height_cm ? fmtNum(profile.height_cm, 1) + ' cm' : '—'],
+               [t('pr.startweight'), profile.start_weight ? fmtNum(profile.start_weight) + ' kg' : '—'],
+               [t('pr.goalweight'), profile.goal_weight ? fmtNum(profile.goal_weight) + ' kg' : '—'],
+               [t('pr.activity'), activityLabel(profile.activity_level)],
+               [t('pr.goal'), profile.goal_text || '—'],
+               [t('pr.health'), profile.health_notes || '—']]
+              .map(([k, v]) => `<div class="list-item"><small style="color:var(--ink-3);font-weight:650">${esc(k)}</small>
                 <span style="text-align:right;white-space:normal">${esc(v)}</span></div>`).join('')}
-          </div>` : '<div class="empty"><p>Intake is nog niet ingevuld.</p></div>'}
+          </div>` : `<div class="empty"><p>${t('co.intake.empty')}</p></div>`}
         </div>
         <div class="card">
-          <div class="card-head"><div><div class="card-title">Coachnotities</div>
-            <div class="card-sub">Alleen zichtbaar voor coaches</div></div></div>
+          <div class="card-head"><div><div class="card-title">${t('co.notes')}</div>
+            <div class="card-sub">${t('co.notes.sub')}</div></div></div>
           <form data-notef style="display:flex;gap:8px;margin-bottom:10px">
-            <input class="input" name="text" placeholder="Nieuwe notitie…" required>
+            <input class="input" name="text" placeholder="${t('co.notes.ph')}" required>
             <button class="btn" type="submit">+</button>
           </form>
           <div data-notes>${notesHTML(notes)}</div>
         </div>
       </div>
       <div class="card">
-        <div class="card-head"><div><div class="card-title">Alle check-ins</div></div></div>
+        <div class="card-head"><div><div class="card-title">${t('co.allcheckins')}</div></div></div>
         ${checkinTable(checkins)}
       </div>`;
 
-    HFCharts.lineChart(root.querySelector('#chart-weight'), {
-      points: weightSeries(checkins), colorVar: '--series-weight', unit: 'kg', name: 'Gewicht', goal: s.goal, decimals: 1,
-    });
-    HFCharts.lineChart(root.querySelector('#chart-energy'), {
-      points: energySeries(checkins), colorVar: '--series-energy', unit: '/10', name: 'Energie', decimals: 0, yMin: 0, yMax: 11,
-    });
+    renderCharts(root, checkins, s.goal);
 
     root.querySelector('[data-notef]').onsubmit = async (e) => {
       e.preventDefault();
@@ -712,22 +1021,24 @@
       } catch (err) { toast(err.message, true); }
     };
 
-    root.querySelector('[data-resetpw]').onclick = async () => {
-      if (!await confirmModal('Wachtwoord resetten', `${user.name} krijgt een nieuw tijdelijk wachtwoord en moet dit bij de volgende login wijzigen.`, 'Resetten')) return;
-      try {
-        const res = await api(`/coach/members/${id}/reset-password`, { method: 'POST' });
-        const m = modal(`
-          <h3>Nieuw tijdelijk wachtwoord</h3>
-          ${passwordRevealHTML(res.password)}
-          <div class="modal-actions"><button class="btn" data-done>Klaar</button></div>`);
-        m.querySelector('[data-copy]').onclick = () => copyText(res.password);
-        m.querySelector('[data-done]').onclick = closeModal;
-      } catch (err) { toast(err.message, true); }
-    };
+    root.querySelector('[data-resetpw]').onclick = () => resetPasswordFlow(user, `/coach/members/${id}/reset-password`);
+  }
+
+  async function resetPasswordFlow(user, endpoint) {
+    if (!await confirmModal(t('co.resetpw.title'), t('co.resetpw.text', { name: user.name }), t('co.resetpw.btn'))) return;
+    try {
+      const res = await api(endpoint, { method: 'POST' });
+      const m = modal(`
+        <h3>${t('co.resetpw.result')}</h3>
+        ${passwordRevealHTML(res.password)}
+        <div class="modal-actions"><button class="btn" data-done>${t('btn.done')}</button></div>`);
+      m.querySelector('[data-copy]').onclick = () => copyText(res.password);
+      m.querySelector('[data-done]').onclick = closeModal;
+    } catch (err) { toast(err.message, true); }
   }
 
   function notesHTML(notes) {
-    if (!notes.length) return '<p style="color:var(--ink-3);font-size:13.5px">Nog geen notities.</p>';
+    if (!notes.length) return `<p style="color:var(--ink-3);font-size:13.5px">${t('co.notes.empty')}</p>`;
     return notes.map((n) => `
       <div class="note-item">
         <div style="white-space:pre-wrap">${esc(n.text)}</div>
@@ -738,63 +1049,63 @@
   // ---------- Admin ----------
 
   async function adminHome() {
-    const root = shell('<div class="skeleton">Laden…</div>');
+    const root = shell(`<div class="skeleton">${t('loading')}</div>`);
     const [o, u] = await Promise.all([api('/admin/overview'), api('/admin/users')]);
     const silent = u.members.filter((m) => m.active && (daysAgo(m.last_checkin) == null || daysAgo(m.last_checkin) > 7));
     root.innerHTML = `
-      <div class="page-head"><div><h1>Overzicht</h1>
-        <p class="sub">Zo staat je community ervoor.</p></div></div>
+      <div class="page-head"><div><h1>${t('ad.title')}</h1>
+        <p class="sub">${t('ad.sub')}</p></div></div>
       <div class="tile-row">
-        <div class="tile"><span class="tile-label">Actieve deelnemers</span><span class="tile-value">${o.members}</span></div>
-        <div class="tile"><span class="tile-label">Coaches</span><span class="tile-value">${o.coaches}</span></div>
-        <div class="tile"><span class="tile-label">Check-ins deze week</span><span class="tile-value">${o.checkins_week}</span></div>
-        <div class="tile"><span class="tile-label">Actief deze week</span><span class="tile-value">${o.active_week}<small>van ${o.members}</small></span></div>
+        <div class="tile"><span class="tile-label">${t('ad.tile.members')}</span><span class="tile-value">${o.members}</span></div>
+        <div class="tile"><span class="tile-label">${t('ad.tile.coaches')}</span><span class="tile-value">${o.coaches}</span></div>
+        <div class="tile"><span class="tile-label">${t('ad.tile.checkins')}</span><span class="tile-value">${o.checkins_week}</span></div>
+        <div class="tile"><span class="tile-label">${t('ad.tile.active')}</span><span class="tile-value">${o.active_week}<small>${t('ad.of', { n: o.members })}</small></span></div>
       </div>
       ${o.unassigned ? `<div class="card" style="border-color:var(--warn-text)">
-        <b>⚠️ ${o.unassigned} deelnemer${o.unassigned === 1 ? ' heeft' : 's hebben'} nog geen coach.</b>
-        <p style="color:var(--ink-2);font-size:14px;margin-top:4px">Koppel ze via <a href="#/deelnemers">Deelnemers</a>.</p>
+        <b>${t('ad.unassigned', { n: o.unassigned })}</b>
+        <p style="color:var(--ink-2);font-size:14px;margin-top:4px">${t('ad.unassigned.link')} <a href="#/deelnemers">${t('nav.members')}</a>.</p>
       </div>` : ''}
       <div class="card">
-        <div class="card-head"><div><div class="card-title">Aandacht nodig</div>
-          <div class="card-sub">Deelnemers zonder check-in in de afgelopen 7 dagen</div></div></div>
+        <div class="card-head"><div><div class="card-title">${t('ad.attention')}</div>
+          <div class="card-sub">${t('ad.attention.sub')}</div></div></div>
         ${silent.length ? `<div class="list">${silent.slice(0, 8).map((m) => `
           <div class="list-item">
             <div class="person-row"><div class="avatar">${esc(initials(m.name))}</div>
-              <div class="who"><b>${esc(m.name)}</b><small>${m.coach_name ? 'coach: ' + esc(m.coach_name) : 'geen coach'}</small></div></div>
+              <div class="who"><b>${esc(m.name)}</b><small>${m.coach_name ? t('th.coach').toLowerCase() + ': ' + esc(m.coach_name) : t('badge.nocoach')}</small></div></div>
             <div style="display:flex;align-items:center;gap:10px">${memberBadge(m)}
-              <a class="btn ghost small" href="#/deelnemer/${m.id}">Bekijk</a></div>
+              <a class="btn ghost small" href="#/deelnemer/${m.id}">${t('btn.view')}</a></div>
           </div>`).join('')}</div>`
-        : '<div class="empty"><div class="big-emoji">🎉</div><p>Iedereen heeft recent ingecheckt!</p></div>'}
+        : `<div class="empty"><div class="big-emoji">🎉</div><p>${t('ad.attention.empty')}</p></div>`}
       </div>`;
   }
 
   async function adminMembersView() {
-    const root = shell('<div class="skeleton">Laden…</div>');
+    const root = shell(`<div class="skeleton">${t('loading')}</div>`);
     const u = await api('/admin/users');
     const render = (filter = '') => {
       const list = u.members.filter((m) =>
         (m.name + ' ' + m.email + ' ' + (m.coach_name || '')).toLowerCase().includes(filter.toLowerCase()));
       root.innerHTML = `
-        <div class="page-head"><div><h1>Deelnemers</h1>
-          <p class="sub">${u.members.length} deelnemers in totaal.</p></div>
-          <button class="btn" data-new>+ Nieuwe deelnemer</button></div>
+        <div class="page-head"><div><h1>${t('ad.members.title')}</h1>
+          <p class="sub">${t('ad.members.sub', { n: u.members.length })}</p></div>
+          <button class="btn" data-new>${t('co.new')}</button></div>
         <div class="card">
-          <input class="input" data-search placeholder="Zoek op naam, e-mail of coach…" value="${esc(filter)}" style="margin-bottom:14px">
+          <input class="input" data-search placeholder="${t('ad.members.search')}" value="${esc(filter)}" style="margin-bottom:14px">
           ${list.length ? `<div class="table-wrap"><table class="table">
-            <thead><tr><th>Deelnemer</th><th>Coach</th><th>Status</th><th>Laatste check-in</th><th></th></tr></thead>
+            <thead><tr><th>${t('th.member')}</th><th>${t('th.coach')}</th><th>${t('th.status')}</th><th>${t('th.lastcheckin')}</th><th></th></tr></thead>
             <tbody>${list.map((m) => `
               <tr>
                 <td><div class="person-row"><div class="avatar">${esc(initials(m.name))}</div>
                   <div class="who"><b>${esc(m.name)}</b><small>${esc(m.email)}</small></div></div></td>
-                <td>${m.coach_name ? esc(m.coach_name) : '<span class="badge warn">geen coach</span>'}</td>
-                <td>${m.active ? memberBadge(m) : '<span class="badge bad">inactief</span>'}</td>
+                <td>${m.coach_name ? esc(m.coach_name) : `<span class="badge warn">${t('badge.nocoach')}</span>`}</td>
+                <td>${m.active ? memberBadge(m) : `<span class="badge bad">${t('badge.inactive')}</span>`}</td>
                 <td>${m.last_checkin ? fmtDate(m.last_checkin) : '—'}</td>
                 <td style="text-align:right">
-                  <a class="btn ghost small" href="#/deelnemer/${m.id}">Bekijk</a>
-                  <button class="btn ghost small" data-edit="${m.id}">Bewerk</button>
+                  <a class="btn ghost small" href="#/deelnemer/${m.id}">${t('btn.view')}</a>
+                  <button class="btn ghost small" data-edit="${m.id}">${t('btn.edit')}</button>
                 </td>
               </tr>`).join('')}</tbody></table></div>`
-          : '<div class="empty"><p>Geen deelnemers gevonden.</p></div>'}
+          : `<div class="empty"><p>${t('ad.members.empty')}</p></div>`}
         </div>`;
       const search = root.querySelector('[data-search]');
       search.oninput = () => { const v = search.value; render(v);
@@ -808,92 +1119,105 @@
     render();
   }
 
-  async function adminCoachesView() {
-    const root = shell('<div class="skeleton">Laden…</div>');
+  function newStaffModal(role, onDone) {
+    const m = modal(`
+      <h3>${role === 'admin' ? t('modal.newadmin') : t('modal.newcoach')}</h3>
+      <form data-f style="display:flex;flex-direction:column;gap:14px">
+        <div class="field"><label>${t('modal.name')}</label><input class="input" name="name" required placeholder="${t('modal.name.ph')}"></div>
+        <div class="field"><label>${t('login.email')}</label><input class="input" name="email" type="email" required></div>
+        <div class="modal-actions">
+          <button class="btn ghost" type="button" data-x>${t('btn.cancel')}</button>
+          <button class="btn" type="submit">${t('btn.create')}</button>
+        </div>
+      </form>`);
+    m.querySelector('[data-x]').onclick = closeModal;
+    m.querySelector('[data-f]').onsubmit = async (e) => {
+      e.preventDefault();
+      const f = new FormData(e.target);
+      try {
+        const res = await api('/admin/users', { method: 'POST', body: { role, name: f.get('name'), email: f.get('email') } });
+        tempPasswordModal(res, onDone);
+      } catch (err) { toast(err.message, true); }
+    };
+  }
+
+  async function adminTeamView() {
+    const root = shell(`<div class="skeleton">${t('loading')}</div>`);
     const u = await api('/admin/users');
     root.innerHTML = `
-      <div class="page-head"><div><h1>Coaches</h1>
-        <p class="sub">${u.coaches.length} coach${u.coaches.length === 1 ? '' : 'es'}.</p></div>
-        <button class="btn" data-new>+ Nieuwe coach</button></div>
+      <div class="page-head"><div><h1>${t('nav.team')}</h1>
+        <p class="sub">${t('ad.team.sub')}</p></div></div>
       <div class="card">
+        <div class="card-head"><div><div class="card-title">${t('ad.coaches.title')}</div></div>
+          <button class="btn small" data-newcoach>${t('ad.coaches.new')}</button></div>
         ${u.coaches.length ? `<div class="table-wrap"><table class="table">
-          <thead><tr><th>Coach</th><th class="num">Deelnemers</th><th>Status</th><th></th></tr></thead>
+          <thead><tr><th>${t('th.coach')}</th><th class="num">${t('th.members')}</th><th>${t('th.status')}</th><th></th></tr></thead>
           <tbody>${u.coaches.map((c) => `
             <tr>
               <td><div class="person-row"><div class="avatar">${esc(initials(c.name))}</div>
                 <div class="who"><b>${esc(c.name)}</b><small>${esc(c.email)}</small></div></div></td>
               <td class="num">${c.member_count}</td>
-              <td>${c.active ? '<span class="badge good">actief</span>' : '<span class="badge bad">inactief</span>'}</td>
+              <td>${c.active ? `<span class="badge good">${t('badge.active')}</span>` : `<span class="badge bad">${t('badge.inactive')}</span>`}</td>
               <td style="text-align:right">
-                <button class="btn ghost small" data-edit="${c.id}">Bewerk</button>
-                <button class="btn ghost small" data-pw="${c.id}">Reset wachtwoord</button>
+                <button class="btn ghost small" data-edit-coach="${c.id}">${t('btn.edit')}</button>
+                <button class="btn ghost small" data-pw="${c.id}">${t('btn.resetpw')}</button>
               </td>
             </tr>`).join('')}</tbody></table></div>`
-        : '<div class="empty"><div class="big-emoji">🧑‍🏫</div><p>Nog geen coaches. Maak de eerste aan!</p></div>'}
+        : `<div class="empty"><div class="big-emoji">🧑‍🏫</div><p>${t('ad.coaches.empty')}</p></div>`}
+      </div>
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">${t('ad.admins.title')}</div>
+          <div class="card-sub">${t('ad.admins.sub')}</div></div>
+          <button class="btn small" data-newadmin>${t('ad.admins.new')}</button></div>
+        <div class="table-wrap"><table class="table">
+          <thead><tr><th>${t('th.admin')}</th><th>${t('th.status')}</th><th></th></tr></thead>
+          <tbody>${u.admins.map((a) => `
+            <tr>
+              <td><div class="person-row"><div class="avatar">${esc(initials(a.name))}</div>
+                <div class="who"><b>${esc(a.name)}${a.id === state.user.id ? ` <span class="badge">${t('you')}</span>` : ''}</b><small>${esc(a.email)}</small></div></div></td>
+              <td>${a.active ? `<span class="badge good">${t('badge.active')}</span>` : `<span class="badge bad">${t('badge.inactive')}</span>`}</td>
+              <td style="text-align:right">
+                <button class="btn ghost small" data-edit-admin="${a.id}">${t('btn.edit')}</button>
+                ${a.id !== state.user.id ? `<button class="btn ghost small" data-pw="${a.id}">${t('btn.resetpw')}</button>` : ''}
+              </td>
+            </tr>`).join('')}</tbody></table></div>
       </div>`;
-    root.querySelector('[data-new]').onclick = () => {
-      const m = modal(`
-        <h3>Nieuwe coach</h3>
-        <form data-f style="display:flex;flex-direction:column;gap:14px">
-          <div class="field"><label>Naam</label><input class="input" name="name" required></div>
-          <div class="field"><label>E-mailadres</label><input class="input" name="email" type="email" required></div>
-          <div class="modal-actions">
-            <button class="btn ghost" type="button" data-x>Annuleren</button>
-            <button class="btn" type="submit">Account aanmaken</button>
-          </div>
-        </form>`);
-      m.querySelector('[data-x]').onclick = closeModal;
-      m.querySelector('[data-f]').onsubmit = async (e) => {
-        e.preventDefault();
-        const f = new FormData(e.target);
-        try {
-          const res = await api('/admin/users', { method: 'POST', body: { role: 'coach', name: f.get('name'), email: f.get('email') } });
-          m.innerHTML = `
-            <h3>Coach aangemaakt 🎉</h3>
-            <p style="color:var(--ink-2)">${esc(res.user.name)} kan inloggen met <b>${esc(res.user.email)}</b>:</p>
-            ${passwordRevealHTML(res.password)}
-            <div class="modal-actions"><button class="btn" data-done>Klaar</button></div>`;
-          m.querySelector('[data-copy]').onclick = () => copyText(res.password);
-          m.querySelector('[data-done]').onclick = () => { closeModal(); adminCoachesView(); };
-        } catch (err) { toast(err.message, true); }
-      };
-    };
-    root.querySelectorAll('[data-edit]').forEach((b) => b.onclick = () => {
-      const c = u.coaches.find((x) => x.id == b.dataset.edit);
-      editUserModal(c, 'coach', null, adminCoachesView);
+    root.querySelector('[data-newcoach]').onclick = () => newStaffModal('coach', adminTeamView);
+    root.querySelector('[data-newadmin]').onclick = () => newStaffModal('admin', adminTeamView);
+    root.querySelectorAll('[data-edit-coach]').forEach((b) => b.onclick = () => {
+      const c = u.coaches.find((x) => x.id == b.dataset.editCoach);
+      editUserModal(c, 'coach', null, adminTeamView);
     });
-    root.querySelectorAll('[data-pw]').forEach((b) => b.onclick = async () => {
-      try {
-        const res = await api(`/admin/users/${b.dataset.pw}/reset-password`, { method: 'POST' });
-        const m = modal(`
-          <h3>Nieuw tijdelijk wachtwoord</h3>
-          ${passwordRevealHTML(res.password)}
-          <div class="modal-actions"><button class="btn" data-done>Klaar</button></div>`);
-        m.querySelector('[data-copy]').onclick = () => copyText(res.password);
-        m.querySelector('[data-done]').onclick = closeModal;
-      } catch (err) { toast(err.message, true); }
+    root.querySelectorAll('[data-edit-admin]').forEach((b) => b.onclick = () => {
+      const a = u.admins.find((x) => x.id == b.dataset.editAdmin);
+      editUserModal(a, 'admin', null, adminTeamView);
+    });
+    root.querySelectorAll('[data-pw]').forEach((b) => b.onclick = () => {
+      const all = [...u.coaches, ...u.admins];
+      const target = all.find((x) => x.id == b.dataset.pw);
+      resetPasswordFlow(target, `/admin/users/${b.dataset.pw}/reset-password`);
     });
   }
 
   function editUserModal(user, role, coaches, onDone) {
     const coachSelect = role === 'member' && coaches ? `
-      <div class="field"><label>Coach</label>
-        <select class="input" name="coach_id"><option value="">— Geen coach —</option>
+      <div class="field"><label>${t('th.coach')}</label>
+        <select class="input" name="coach_id"><option value="">${t('modal.nocoach')}</option>
         ${coaches.map((c) => `<option value="${c.id}"${user.coach_id === c.id ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}</select></div>` : '';
     const m = modal(`
-      <h3>${esc(user.name)} bewerken</h3>
+      <h3>${t('modal.edit.title', { name: esc(user.name) })}</h3>
       <form data-f style="display:flex;flex-direction:column;gap:14px">
-        <div class="field"><label>Naam</label><input class="input" name="name" required value="${esc(user.name)}"></div>
-        <div class="field"><label>E-mailadres</label><input class="input" name="email" type="email" required value="${esc(user.email)}"></div>
+        <div class="field"><label>${t('modal.name')}</label><input class="input" name="name" required value="${esc(user.name)}"></div>
+        <div class="field"><label>${t('login.email')}</label><input class="input" name="email" type="email" required value="${esc(user.email)}"></div>
         ${coachSelect}
-        <div class="field"><label>Status</label>
+        <div class="field"><label>${t('modal.status')}</label>
           <select class="input" name="active">
-            <option value="1"${user.active ? ' selected' : ''}>Actief</option>
-            <option value="0"${!user.active ? ' selected' : ''}>Inactief (kan niet inloggen)</option>
+            <option value="1"${user.active ? ' selected' : ''}>${t('modal.active')}</option>
+            <option value="0"${!user.active ? ' selected' : ''}>${t('modal.inactive')}</option>
           </select></div>
         <div class="modal-actions">
-          <button class="btn ghost" type="button" data-x>Annuleren</button>
-          <button class="btn" type="submit">Opslaan</button>
+          <button class="btn ghost" type="button" data-x>${t('btn.cancel')}</button>
+          <button class="btn" type="submit">${t('btn.save')}</button>
         </div>
       </form>`);
     m.querySelector('[data-x]').onclick = closeModal;
@@ -904,7 +1228,7 @@
       if (role === 'member' && coaches) body.coach_id = f.get('coach_id') ? Number(f.get('coach_id')) : null;
       try {
         await api('/admin/users/' + user.id, { method: 'PUT', body });
-        toast('Opgeslagen ✔');
+        toast(t('toast.saved'));
         closeModal();
         onDone();
       } catch (err) { toast(err.message, true); }
@@ -914,16 +1238,21 @@
   async function settingsView() {
     const root = shell('');
     root.innerHTML = `
-      <div class="page-head"><div><h1>Instellingen</h1></div></div>
+      <div class="page-head"><div><h1>${t('set.title')}</h1></div></div>
       <div class="card">
-        <div class="card-head"><div><div class="card-title">Wachtwoord wijzigen</div></div></div>
+        <div class="card-head"><div><div class="card-title">${t('pw.title')}</div></div></div>
         ${passwordFormHTML()}
       </div>
       <div class="card">
-        <div class="card-head"><div><div class="card-title">Weergave</div></div></div>
-        <button class="btn ghost" data-th>Thema wisselen (licht / donker / systeem)</button>
+        <div class="card-head"><div><div class="card-title">${t('set.lang')}</div></div></div>
+        ${langToggleHTML()}
+      </div>
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">${t('set.display')}</div></div></div>
+        <button class="btn ghost" data-th>${t('theme.switch')}</button>
       </div>`;
     bindPasswordForm(root);
+    bindLangToggle(root);
     root.querySelector('[data-th]').onclick = cycleTheme;
   }
 
@@ -954,7 +1283,7 @@
       }
       // admin
       if (hash === '#/deelnemers') return await adminMembersView();
-      if (hash === '#/coaches') return await adminCoachesView();
+      if (hash === '#/team' || hash === '#/coaches') return await adminTeamView();
       if (hash === '#/instellingen') return await settingsView();
       return await adminHome();
     } catch (err) {

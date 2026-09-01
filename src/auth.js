@@ -46,9 +46,9 @@ function currentUser(req) {
 function requireRole(...roles) {
   return (req, res, next) => {
     const user = currentUser(req);
-    if (!user) return res.status(401).json({ error: 'Niet ingelogd' });
+    if (!user) return res.status(401).json({ error: 'not_logged_in' });
     if (roles.length && user.role !== 'admin' && !roles.includes(user.role)) {
-      return res.status(403).json({ error: 'Geen toegang' });
+      return res.status(403).json({ error: 'forbidden' });
     }
     req.user = user;
     next();

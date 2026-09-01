@@ -1,7 +1,12 @@
 /* HerbaForms — lichtgewicht SVG-lijngrafiek met crosshair-tooltip. */
 (function () {
   const NS = 'http://www.w3.org/2000/svg';
-  const MONTHS = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+  const MONTHS_BY_LANG = {
+    nl: ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'],
+    en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  };
+  const lang = () => localStorage.getItem('hf-lang') === 'en' ? 'en' : 'nl';
+  const MONTHS = { get current() { return MONTHS_BY_LANG[lang()]; } };
 
   function el(name, attrs) {
     const node = document.createElementNS(NS, name);
@@ -11,14 +16,14 @@
 
   function fmtDate(iso) {
     const [y, m, d] = iso.split('-').map(Number);
-    return `${d} ${MONTHS[m - 1]}`;
+    return `${d} ${MONTHS.current[m - 1]}`;
   }
   function fmtDateLong(iso) {
     const [y, m, d] = iso.split('-').map(Number);
-    return `${d} ${MONTHS[m - 1]} ${y}`;
+    return `${d} ${MONTHS.current[m - 1]} ${y}`;
   }
   function fmtVal(v, decimals) {
-    return v.toLocaleString('nl-NL', { minimumFractionDigits: 0, maximumFractionDigits: decimals });
+    return v.toLocaleString(lang() === 'en' ? 'en-US' : 'nl-NL', { minimumFractionDigits: 0, maximumFractionDigits: decimals });
   }
 
   // nette y-ticks (max ~4)
@@ -34,7 +39,8 @@
   }
 
   function lineChart(container, opts) {
-    const { points, colorVar, unit = '', name = '', goal = null, decimals = 1, yMin = null, yMax = null } = opts;
+    const { points, colorVar, unit = '', name = '', goal = null, decimals = 1, yMin = null, yMax = null,
+            goalLabel = 'doel', emptyText = 'Nog geen metingen — vul je eerste check-in in.' } = opts;
     container.classList.add('chart-box');
     container.textContent = '';
 
@@ -43,7 +49,7 @@
       empty.className = 'empty';
       empty.innerHTML = '<div class="big-emoji">📈</div>';
       const p = document.createElement('p');
-      p.textContent = 'Nog geen metingen — vul je eerste check-in in.';
+      p.textContent = emptyText;
       empty.appendChild(p);
       container.appendChild(empty);
       return;
@@ -102,7 +108,7 @@
         const gy = Y(goal);
         svg.appendChild(el('line', { x1: pad.l, x2: W - pad.r, y1: gy, y2: gy, stroke: 'var(--chart-axis)', 'stroke-width': 1.5 }));
         const gl = el('text', { x: W - pad.r, y: gy - 5, 'text-anchor': 'end', 'font-size': 11, 'font-weight': 650, fill: 'var(--ink-2)' });
-        gl.textContent = `doel ${fmtVal(goal, decimals)}`;
+        gl.textContent = `${goalLabel} ${fmtVal(goal, decimals)}`;
         svg.appendChild(gl);
       }
 
