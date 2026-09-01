@@ -58,6 +58,14 @@ CREATE TABLE IF NOT EXISTS coach_notes (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS coach_invites (
+  token TEXT PRIMARY KEY,
+  created_by INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  used_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  used_at TEXT
+);
+
 CREATE TABLE IF NOT EXISTS password_resets (
   token_hash TEXT PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,

@@ -158,15 +158,33 @@ app.post('/api/coach/invite-link/regenerate', requireRole('coach'), (req, res) =
 const inviterByToken = (token) => (!token || !/^[a-f0-9]{32}$/.test(token)) ? null :
   db.prepare(`SELECT id, name, role FROM users WHERE invite_token = ? AND active = 1 AND role IN ('coach','admin')`).get(token);
 
+// Eenmalige uitnodiging voor een nieuwe coach.
+const coachInviteByToken = (token) => (!token || !/^[a-f0-9]{32}$/.test(token)) ? null :
+  db.prepare(`
+    SELECT ci.token, u.name AS creator_name FROM coach_invites ci
+    JOIN users u ON u.id = ci.created_by
+    WHERE ci.token = ? AND ci.used_at IS NULL
+  `).get(token);
+
+app.post('/api/admin/coach-invite', requireRole('admin'), (req, res) => {
+  const token = crypto.randomBytes(16).toString('hex');
+  db.prepare('INSERT INTO coach_invites (token, created_by) VALUES (?, ?)').run(token, req.user.id);
+  res.json({ token });
+});
+
 app.get('/api/invite/:token', (req, res) => {
   const inviter = inviterByToken(req.params.token);
-  if (!inviter) return res.status(404).json({ error: 'invalid_invite' });
-  res.json({ coach: inviter.name });
+  if (inviter) return res.json({ type: 'member', coach: inviter.name });
+  const ci = coachInviteByToken(req.params.token);
+  if (ci) return res.json({ type: 'coach', coach: ci.creator_name });
+  res.status(404).json({ error: 'invalid_invite' });
 });
 
 app.post('/api/register', (req, res) => {
   const { token, name, email, password } = req.body || {};
   const inviter = inviterByToken(token);
+  const coachInvite = inviter ? null : coachInviteByToken(token);
+  if (coachInvite) return registerCoach(req, res, coachInvite);
   if (!inviter) return res.status(404).json({ error: 'invalid_invite' });
   const pw = String(password || '').trim();
   if (pw.length < 8) return res.status(400).json({ error: 'password_too_short' });
@@ -185,6 +203,28 @@ app.post('/api/register', (req, res) => {
     res.status(400).json({ error: 'email_in_use' });
   }
 });
+
+function registerCoach(req, res, invite) {
+  const { name, email, password } = req.body || {};
+  const pw = String(password || '').trim();
+  if (pw.length < 8) return res.status(400).json({ error: 'password_too_short' });
+  const cleanName = String(name || '').trim();
+  const cleanEmail = String(email || '').trim();
+  if (!cleanName || !cleanEmail.includes('@')) return res.status(400).json({ error: 'name_email_required' });
+  try {
+    const info = db.prepare(`
+      INSERT INTO users (role, name, email, password_hash, must_change_password)
+      VALUES ('coach', ?, ?, ?, 0)
+    `).run(cleanName, cleanEmail, bcrypt.hashSync(pw, 10));
+    db.prepare(`UPDATE coach_invites SET used_by = ?, used_at = datetime('now') WHERE token = ?`)
+      .run(info.lastInsertRowid, invite.token);
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
+    createSession(res, user.id);
+    res.json({ user: publicUser(user) });
+  } catch (e) {
+    res.status(400).json({ error: 'email_in_use' });
+  }
+}
 
 // ---------- Deelnemer ----------
 

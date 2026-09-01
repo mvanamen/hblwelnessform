@@ -158,6 +158,13 @@
       'inv.sub': 'Deel deze link via WhatsApp of e-mail. Wie de link opent maakt zelf een account aan en wordt automatisch aan jou gekoppeld.',
       'inv.sub.admin': 'Deel deze link via WhatsApp of e-mail. Wie de link opent maakt zelf een account aan (nog zonder coach — koppel daarna een coach via Deelnemers).',
       'inv.copy': 'Kopieer link', 'inv.regen': 'Nieuwe link genereren',
+      'inv.wa': 'Delen via WhatsApp',
+      'inv.coach.btn': 'Uitnodigingslink',
+      'inv.coach.title': 'Uitnodigingslink voor nieuwe coach',
+      'inv.coach.sub': 'Deel deze link met de nieuwe coach. Let op: de link is eenmalig geldig \u2014 zodra er een account mee is aangemaakt werkt hij niet meer. Voor iedere nieuwe coach genereer je een nieuwe link.',
+      'wa.member': 'Hoi! Maak via deze link je eigen account aan op HerbaForms, dan gaan we samen met jouw doelen aan de slag \ud83c\udf3f ',
+      'wa.coach': 'Hoi! Via deze link maak je jouw coach-account aan op HerbaForms. De link is eenmalig geldig, dus alleen voor jou \ud83d\ude0a ',
+      'reg.invited.coach': 'Je bent door {name} uitgenodigd als coach.',
       'inv.regen.title': 'Nieuwe link genereren?',
       'inv.regen.text': 'De oude link werkt daarna niet meer. Al aangemaakte accounts blijven gewoon bestaan.',
       'inv.regen.btn': 'Genereer nieuwe link',
@@ -341,6 +348,13 @@
       'inv.sub': 'Share this link via WhatsApp or email. Anyone who opens it creates their own account and is automatically linked to you.',
       'inv.sub.admin': 'Share this link via WhatsApp or email. Anyone who opens it creates their own account (without a coach — assign one afterwards via Members).',
       'inv.copy': 'Copy link', 'inv.regen': 'Generate new link',
+      'inv.wa': 'Share via WhatsApp',
+      'inv.coach.btn': 'Invite link',
+      'inv.coach.title': 'Invite link for a new coach',
+      'inv.coach.sub': 'Share this link with the new coach. Note: the link is valid once \u2014 as soon as an account has been created with it, it stops working. Generate a new link for every new coach.',
+      'wa.member': "Hi! Create your own HerbaForms account via this link, so we can start working on your goals together \ud83c\udf3f ",
+      'wa.coach': "Hi! Use this link to create your coach account on HerbaForms. The link is valid once, so it's just for you \ud83d\ude0a ",
+      'reg.invited.coach': 'You have been invited by {name} as a coach.',
       'inv.regen.title': 'Generate a new link?',
       'inv.regen.text': 'The old link will stop working. Accounts that were already created remain untouched.',
       'inv.regen.btn': 'Generate new link',
@@ -518,6 +532,7 @@
     moon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 13A8.5 8.5 0 1 1 11 3a7 7 0 0 0 10 10z"/></svg>',
     globe: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z"/></svg>',
     shield: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 4.5 3 8.5 7 10 4-1.5 7-5.5 7-10V6l-7-3z"/></svg>',
+    wa: '<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.6-6.1c-.3-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.3-.6.8-.8 1-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4 0-.5.1-.7l.4-.5c.1-.2.2-.3.3-.5s0-.4 0-.5c-.1-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s1 2.5 1.1 2.7c.1.2 1.9 3 4.7 4.2.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></svg>',
     leaf: '<svg width="20" height="20" viewBox="0 0 32 32"><path d="M16 25c-5-2-8-6-8-11 0-3 2-6 5-7 4-1 8 1 10 5-3-1-6 0-8 2s-3 5-2 8c.8 1.6 2 2.6 3 3z" fill="#17240a"/></svg>',
   };
   const logoHTML = `<div class="logo"><div class="logo-mark">${I.leaf}</div><div class="logo-name">Herba<span>Forms</span></div></div>`;
@@ -825,8 +840,8 @@
 
   async function registerView(token) {
     $app.innerHTML = `<div class="login-wrap"><div class="login-card"><div class="skeleton">${t('loading')}</div></div></div>`;
-    let coach;
-    try { ({ coach } = await api('/invite/' + token)); }
+    let coach, type;
+    try { ({ coach, type } = await api('/invite/' + token)); }
     catch {
       $app.innerHTML = `
         <div class="login-wrap">
@@ -849,7 +864,7 @@
             <div class="login-brand">
               <div class="logo-mark">${I.leaf}</div>
               <h1>${t('reg.title')}</h1>
-              <p>${t('reg.invited', { name: `<b>${esc(coach)}</b>` })}</p>
+              <p>${t(type === 'coach' ? 'reg.invited.coach' : 'reg.invited', { name: `<b>${esc(coach)}</b>` })}</p>
             </div>
             ${err ? `<div class="form-error">${esc(err)}</div>` : ''}
             <form id="reg-form" style="display:flex;flex-direction:column;gap:14px">
@@ -895,6 +910,7 @@
         <h3>${t('inv.title')}</h3>
         <p style="color:var(--ink-2);font-size:14px">${t('inv.sub')}</p>
         <div class="password-reveal" style="word-break:break-all"><code style="font-size:14px" data-link></code></div>
+        <a class="btn accent" data-wa target="_blank" rel="noopener" style="justify-content:center">${I.wa} ${t('inv.wa')}</a>
         <div class="modal-actions" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
           <button class="btn ghost" data-regen>${t('inv.regen')}</button>
           <div style="display:flex;gap:8px">
@@ -903,6 +919,7 @@
           </div>
         </div>`);
       m.querySelector('[data-link]').textContent = link();
+      m.querySelector('[data-wa]').href = 'https://wa.me/?text=' + encodeURIComponent(t('wa.member') + link());
       m.querySelector('[data-copy]').onclick = () => copyText(link());
       m.querySelector('[data-x]').onclick = closeModal;
       m.querySelector('[data-regen]').onclick = async () => {
@@ -913,6 +930,25 @@
           inviteLinkModal();
         } catch (err) { toast(err.message, true); }
       };
+    }).catch((err) => toast(err.message, true));
+  }
+
+  function coachInviteModal() {
+    api('/admin/coach-invite', { method: 'POST' }).then(({ token }) => {
+      const link = `${location.origin}/#/join/${token}`;
+      const m = modal(`
+        <h3>${t('inv.coach.title')}</h3>
+        <p style="color:var(--ink-2);font-size:14px">${t('inv.coach.sub')}</p>
+        <div class="password-reveal" style="word-break:break-all"><code style="font-size:14px" data-link></code></div>
+        <a class="btn accent" data-wa target="_blank" rel="noopener" style="justify-content:center">${I.wa} ${t('inv.wa')}</a>
+        <div class="modal-actions">
+          <button class="btn ghost" data-x>${t('btn.done')}</button>
+          <button class="btn" data-copy>${t('inv.copy')}</button>
+        </div>`);
+      m.querySelector('[data-link]').textContent = link;
+      m.querySelector('[data-wa]').href = 'https://wa.me/?text=' + encodeURIComponent(t('wa.coach') + link);
+      m.querySelector('[data-copy]').onclick = () => copyText(link);
+      m.querySelector('[data-x]').onclick = closeModal;
     }).catch((err) => toast(err.message, true));
   }
 
@@ -1561,7 +1597,10 @@
         <p class="sub">${t('ad.team.sub')}</p></div></div>
       <div class="card">
         <div class="card-head"><div><div class="card-title">${t('ad.coaches.title')}</div></div>
-          <button class="btn small" data-newcoach>${t('ad.coaches.new')}</button></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn ghost small" data-coachinvite>${t('inv.coach.btn')}</button>
+            <button class="btn small" data-newcoach>${t('ad.coaches.new')}</button>
+          </div></div>
         ${u.coaches.length ? `<div class="table-wrap"><table class="table">
           <thead><tr><th>${t('th.coach')}</th><th class="num">${t('th.members')}</th><th>${t('th.status')}</th><th></th></tr></thead>
           <tbody>${u.coaches.map((c) => `
@@ -1595,6 +1634,7 @@
             </tr>`).join('')}</tbody></table></div>
       </div>`;
     root.querySelector('[data-newcoach]').onclick = () => newStaffModal('coach', adminTeamView);
+    root.querySelector('[data-coachinvite]').onclick = coachInviteModal;
     root.querySelector('[data-newadmin]').onclick = () => newStaffModal('admin', adminTeamView);
     root.querySelectorAll('[data-edit-coach]').forEach((b) => b.onclick = () => {
       const c = u.coaches.find((x) => x.id == b.dataset.editCoach);
