@@ -157,6 +157,14 @@
       'reg.haslogin': 'Al een account?', 'reg.tologin': 'Inloggen',
       'err.invalid_invite': 'Deze uitnodigingslink is ongeldig of verlopen',
       'err.invalid_coach': 'Gekozen coach bestaat niet of is inactief',
+      'err.cannot_delete_self': 'Je kunt jezelf niet verwijderen',
+      'del.btn': 'Gebruiker verwijderen',
+      'del.title': '{name} definitief verwijderen?',
+      'del.text.member': 'Dit verwijdert het account permanent, inclusief alle check-ins, intake en notities. Dit kan niet ongedaan worden gemaakt. Alleen tijdelijk blokkeren? Zet het account dan op inactief.',
+      'del.text.coach': 'Dit verwijdert het account permanent. De deelnemers van deze coach blijven bestaan maar staan daarna zonder coach. Dit kan niet ongedaan worden gemaakt.',
+      'del.text.admin': 'Dit verwijdert het beheerdersaccount permanent. Dit kan niet ongedaan worden gemaakt.',
+      'del.confirm': 'Definitief verwijderen',
+      'del.done': 'Gebruiker verwijderd',
       'err.missing_credentials': 'Vul e-mail en wachtwoord in',
       'err.invalid_credentials': 'Onjuiste inloggegevens',
       'err.not_logged_in': 'Je bent niet (meer) ingelogd',
@@ -320,6 +328,14 @@
       'reg.haslogin': 'Already have an account?', 'reg.tologin': 'Sign in',
       'err.invalid_invite': 'This invite link is invalid or expired',
       'err.invalid_coach': 'The selected coach does not exist or is inactive',
+      'err.cannot_delete_self': 'You cannot delete yourself',
+      'del.btn': 'Delete user',
+      'del.title': 'Permanently delete {name}?',
+      'del.text.member': 'This permanently deletes the account, including all check-ins, intake and notes. This cannot be undone. Only want to block temporarily? Set the account to inactive instead.',
+      'del.text.coach': 'This permanently deletes the account. Members of this coach remain but will be left without a coach. This cannot be undone.',
+      'del.text.admin': 'This permanently deletes the administrator account. This cannot be undone.',
+      'del.confirm': 'Delete permanently',
+      'del.done': 'User deleted',
       'err.missing_credentials': 'Please enter email and password',
       'err.invalid_credentials': 'Incorrect email or password',
       'err.not_logged_in': 'You are not signed in (anymore)',
@@ -1505,12 +1521,25 @@
             <option value="1"${user.active ? ' selected' : ''}>${t('modal.active')}</option>
             <option value="0"${!user.active ? ' selected' : ''}>${t('modal.inactive')}</option>
           </select></div>
-        <div class="modal-actions">
-          <button class="btn ghost" type="button" data-x>${t('btn.cancel')}</button>
-          <button class="btn" type="submit">${t('btn.save')}</button>
+        <div class="modal-actions" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+          ${user.id !== state.user.id ? `<button class="btn danger" type="button" data-del>${t('del.btn')}</button>` : '<span></span>'}
+          <div style="display:flex;gap:10px">
+            <button class="btn ghost" type="button" data-x>${t('btn.cancel')}</button>
+            <button class="btn" type="submit">${t('btn.save')}</button>
+          </div>
         </div>
       </form>`);
     m.querySelector('[data-x]').onclick = closeModal;
+    const delBtn = m.querySelector('[data-del]');
+    if (delBtn) delBtn.onclick = async () => {
+      closeModal();
+      if (!await confirmModal(t('del.title', { name: user.name }), t('del.text.' + role), t('del.confirm'))) return;
+      try {
+        await api('/admin/users/' + user.id, { method: 'DELETE' });
+        toast(t('del.done'));
+        onDone();
+      } catch (err) { toast(err.message, true); }
+    };
     m.querySelector('[data-f]').onsubmit = async (e) => {
       e.preventDefault();
       const f = new FormData(e.target);

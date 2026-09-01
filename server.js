@@ -311,6 +311,16 @@ app.put('/api/admin/users/:id', requireRole('admin'), (req, res) => {
   res.json({ user: publicUser(db.prepare('SELECT * FROM users WHERE id = ?').get(user.id)) });
 });
 
+app.delete('/api/admin/users/:id', requireRole('admin'), (req, res) => {
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
+  if (!user) return res.status(404).json({ error: 'user_not_found' });
+  if (user.id === req.user.id) return res.status(400).json({ error: 'cannot_delete_self' });
+  // Cascades verwijderen profiel, check-ins, notities en sessies;
+  // deelnemers van een verwijderde coach komen los te staan (SET NULL).
+  db.prepare('DELETE FROM users WHERE id = ?').run(user.id);
+  res.json({ ok: true });
+});
+
 app.post('/api/admin/users/:id/reset-password', requireRole('admin'), (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
   if (!user) return res.status(404).json({ error: 'user_not_found' });
