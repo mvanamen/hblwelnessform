@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 140">
+  <defs>
+    <linearGradient id="g" x1="30" y1="0" x2="60" y2="140" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2f9bd6"/>
+      <stop offset="0.26" stop-color="#1d95a8"/>
+      <stop offset="0.48" stop-color="#2f9e58"/>
+      <stop offset="0.7" stop-color="#7fae2e"/>
+      <stop offset="0.85" stop-color="#e0b224"/>
+      <stop offset="1" stop-color="#e2703a"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" stroke="url(#g)" stroke-linecap="round">
+    <!-- hoofd: open cirkel, opening linksonder -->
+    <path d="M53 28 A11.5 11.5 0 1 1 68 25" stroke-width="6"/>
+    <!-- rechterarm: lange zwaai met dip -->
+    <path d="M61 36 C74 40 92 34 108 22" stroke-width="6"/>
+    <!-- linkerarm schuin omhoog -->
+    <path d="M55 36 C46 28 37 19 29 9" stroke-width="5.5"/>
+    <!-- torso -->
+    <path d="M59 36 C56 47 52 57 48 67" stroke-width="8"/>
+    <!-- voorbeen: dij naar rechts, knie, kuit omlaag -->
+    <path d="M48 67 C57 65 66 69 69 77 C72 86 68 97 61 105" stroke-width="8"/>
+    <!-- kuit/hiel rechtsachter -->
+    <path d="M69 79 C76 90 79 102 77 114" stroke-width="6.5"/>
+    <!-- achterbeen: lange lijn linksonder met voet -->
+    <path d="M48 67 C44 80 38 91 31 99 C25 107 17 118 9 129" stroke-width="8"/>
+  </g>
+</svg>

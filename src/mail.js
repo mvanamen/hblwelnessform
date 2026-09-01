@@ -45,7 +45,7 @@ function resetEmailHTML(lang, name, link) {
   return { subject: c.subject, html: `
   <div style="background:#f3f4ee;padding:32px 16px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif">
     <div style="max-width:440px;margin:0 auto;background:#fcfcf9;border-radius:18px;padding:32px;border:1px solid rgba(20,24,18,.08)">
-      <div style="width:44px;height:44px;border-radius:12px;background:#65a30d;text-align:center;line-height:44px;font-size:22px">🌿</div>
+      <img src="https://hblwellnessform.com/img/icon-192.png" width="46" height="46" alt="HerbaForms" style="border-radius:12px;border:1px solid #e3e5db">
       <h1 style="font-size:20px;color:#191c18;margin:18px 0 6px">${c.title}</h1>
       <p style="color:#565b53;font-size:14.5px;line-height:1.6;margin:0 0 6px">${c.hi(name)}</p>
       <p style="color:#565b53;font-size:14.5px;line-height:1.6;margin:0 0 22px">${c.body}</p>

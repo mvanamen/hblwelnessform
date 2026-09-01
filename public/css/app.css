@@ -137,10 +137,10 @@ button { font: inherit; }
 .sidebar .logo { display: flex; align-items: center; gap: 10px; padding: 4px 10px 18px; }
 .logo-mark {
   width: 36px; height: 36px; border-radius: 10px; flex: none;
-  background: var(--accent);
+  background: #ffffff;
   display: grid; place-items: center;
 }
-.logo-mark svg { display: block; }
+.logo-mark svg { display: block; width: 62%; height: auto; }
 .logo-name { font-weight: 800; font-size: 18px; letter-spacing: -0.02em; color: #fff; }
 .logo-name span { color: #a3e635; }
 
