@@ -156,6 +156,7 @@
       'reg.invalid': 'Deze uitnodigingslink is niet (meer) geldig. Vraag je coach om een nieuwe link.',
       'reg.haslogin': 'Al een account?', 'reg.tologin': 'Inloggen',
       'err.invalid_invite': 'Deze uitnodigingslink is ongeldig of verlopen',
+      'err.invalid_coach': 'Gekozen coach bestaat niet of is inactief',
       'err.missing_credentials': 'Vul e-mail en wachtwoord in',
       'err.invalid_credentials': 'Onjuiste inloggegevens',
       'err.not_logged_in': 'Je bent niet (meer) ingelogd',
@@ -318,6 +319,7 @@
       'reg.invalid': 'This invite link is no longer valid. Ask your coach for a new link.',
       'reg.haslogin': 'Already have an account?', 'reg.tologin': 'Sign in',
       'err.invalid_invite': 'This invite link is invalid or expired',
+      'err.invalid_coach': 'The selected coach does not exist or is inactive',
       'err.missing_credentials': 'Please enter email and password',
       'err.invalid_credentials': 'Incorrect email or password',
       'err.not_logged_in': 'You are not signed in (anymore)',
@@ -761,13 +763,15 @@
     render();
   }
 
+  // Beheerders kunnen zelf ook coach zijn van deelnemers.
+  const coachChoices = (u) => [...u.coaches, ...u.admins.map((a) => ({ ...a, is_admin: true }))];
+
   function inviteLinkModal() {
-    const isAdmin = state.user.role === 'admin';
     api('/coach/invite-link', { method: 'POST' }).then(({ token }) => {
       const link = () => `${location.origin}/#/join/${token}`;
       const m = modal(`
         <h3>${t('inv.title')}</h3>
-        <p style="color:var(--ink-2);font-size:14px">${isAdmin ? t('inv.sub.admin') : t('inv.sub')}</p>
+        <p style="color:var(--ink-2);font-size:14px">${t('inv.sub')}</p>
         <div class="password-reveal" style="word-break:break-all"><code style="font-size:14px" data-link></code></div>
         <div class="modal-actions" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
           <button class="btn ghost" data-regen>${t('inv.regen')}</button>
@@ -1158,7 +1162,7 @@
     const coachSelect = coaches ? `
       <div class="field"><label>${t('modal.coach')}</label>
         <select class="input" name="coach_id"><option value="">${t('modal.nocoach')}</option>
-        ${coaches.filter((c) => c.active).map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></div>` : '';
+        ${coaches.filter((c) => c.active).map((c) => `<option value="${c.id}">${esc(c.name)}${c.is_admin ? ` (${t('role.admin')})` : ''}</option>`).join('')}</select></div>` : '';
     const m = modal(`
       <h3>${t('modal.newmember')}</h3>
       <form data-f style="display:flex;flex-direction:column;gap:14px">
@@ -1395,11 +1399,11 @@
       const search = root.querySelector('[data-search]');
       search.oninput = () => { const v = search.value; render(v);
         const s = root.querySelector('[data-search]'); s.focus(); s.setSelectionRange(v.length, v.length); };
-      root.querySelector('[data-new]').onclick = () => newMemberModal(u.coaches, adminMembersView);
+      root.querySelector('[data-new]').onclick = () => newMemberModal(coachChoices(u), adminMembersView);
       root.querySelector('[data-invite]').onclick = inviteLinkModal;
       root.querySelectorAll('[data-edit]').forEach((b) => b.onclick = () => {
         const m = u.members.find((x) => x.id == b.dataset.edit);
-        editUserModal(m, 'member', u.coaches, adminMembersView);
+        editUserModal(m, 'member', coachChoices(u), adminMembersView);
       });
     };
     render();
@@ -1489,7 +1493,7 @@
     const coachSelect = role === 'member' && coaches ? `
       <div class="field"><label>${t('th.coach')}</label>
         <select class="input" name="coach_id"><option value="">${t('modal.nocoach')}</option>
-        ${coaches.map((c) => `<option value="${c.id}"${user.coach_id === c.id ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}</select></div>` : '';
+        ${coaches.map((c) => `<option value="${c.id}"${user.coach_id === c.id ? ' selected' : ''}>${esc(c.name)}${c.is_admin ? ` (${t('role.admin')})` : ''}</option>`).join('')}</select></div>` : '';
     const m = modal(`
       <h3>${t('modal.edit.title', { name: esc(user.name) })}</h3>
       <form data-f style="display:flex;flex-direction:column;gap:14px">

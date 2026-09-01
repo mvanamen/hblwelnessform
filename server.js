@@ -115,7 +115,7 @@ app.post('/api/register', (req, res) => {
     const info = db.prepare(`
       INSERT INTO users (role, name, email, password_hash, coach_id, must_change_password)
       VALUES ('member', ?, ?, ?, ?, 0)
-    `).run(cleanName, cleanEmail, bcrypt.hashSync(pw, 10), inviter.role === 'coach' ? inviter.id : null);
+    `).run(cleanName, cleanEmail, bcrypt.hashSync(pw, 10), inviter.id);
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
     createSession(res, user.id);
     res.json({ user: publicUser(user) });
@@ -297,7 +297,10 @@ app.put('/api/admin/users/:id', requireRole('admin'), (req, res) => {
   const email = b.email !== undefined ? String(b.email).trim() : user.email;
   const active = b.active !== undefined ? (b.active ? 1 : 0) : user.active;
   let coachId = user.coach_id;
-  if (b.coach_id !== undefined && user.role === 'member') coachId = b.coach_id || null;
+  if (b.coach_id !== undefined && user.role === 'member') {
+    if (!validCoachId(b.coach_id)) return res.status(400).json({ error: 'invalid_coach' });
+    coachId = b.coach_id || null;
+  }
   try {
     db.prepare('UPDATE users SET name = ?, email = ?, active = ?, coach_id = ? WHERE id = ?')
       .run(name, email, active, coachId, user.id);
@@ -319,11 +322,19 @@ app.post('/api/admin/users/:id/reset-password', requireRole('admin'), (req, res)
 
 // ---------- Helpers ----------
 
+// Een "coach" van een deelnemer mag ook een beheerder zijn.
+const validCoachId = (id) => !id ||
+  !!db.prepare(`SELECT 1 FROM users WHERE id = ? AND active = 1 AND role IN ('coach','admin')`).get(id);
+
 function createUser(res, { role, name, email, coach_id }) {
   name = String(name || '').trim();
   email = String(email || '').trim();
   if (!name || !email || !email.includes('@')) {
     res.status(400).json({ error: 'name_email_required' });
+    return null;
+  }
+  if (!validCoachId(coach_id)) {
+    res.status(400).json({ error: 'invalid_coach' });
     return null;
   }
   const password = tempPassword();
