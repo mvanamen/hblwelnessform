@@ -528,6 +528,7 @@
   }
 
   // ---------- iconen ----------
+  let leafN = 0;
   const I = {
     home: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>',
     plus: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>',
@@ -541,9 +542,11 @@
     globe: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z"/></svg>',
     shield: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 4.5 3 8.5 7 10 4-1.5 7-5.5 7-10V6l-7-3z"/></svg>',
     wa: '<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.6-6.1c-.3-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.3-.6.8-.8 1-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4 0-.5.1-.7l.4-.5c.1-.2.2-.3.3-.5s0-.4 0-.5c-.1-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s1 2.5 1.1 2.7c.1.2 1.9 3 4.7 4.2.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></svg>',
-    leaf: '<svg width="19" height="22" viewBox="0 0 120 140"><defs><linearGradient id="hflg" x1="30" y1="0" x2="60" y2="140" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#2f9bd6"/><stop offset="0.26" stop-color="#1d95a8"/><stop offset="0.48" stop-color="#2f9e58"/><stop offset="0.7" stop-color="#7fae2e"/><stop offset="0.85" stop-color="#e0b224"/><stop offset="1" stop-color="#e2703a"/></linearGradient></defs><g fill="none" stroke="url(#hflg)" stroke-linecap="round"><path d="M53 28 A11.5 11.5 0 1 1 68 25" stroke-width="6"/><path d="M61 36 C74 40 92 34 108 22" stroke-width="6"/><path d="M55 36 C46 28 37 19 29 9" stroke-width="5.5"/><path d="M59 36 C56 47 52 57 48 67" stroke-width="8"/><path d="M48 67 C57 65 66 69 69 77 C72 86 68 97 61 105" stroke-width="8"/><path d="M69 79 C76 90 79 102 77 114" stroke-width="6.5"/><path d="M48 67 C44 80 38 91 31 99 C25 107 17 118 9 129" stroke-width="8"/></g></svg>',
+    // unieke gradient-id per instantie: een gradient in een verborgen
+    // element (display:none) rendert anders niet in andere instanties
+    get leaf() { const gid = 'hflg' + (++leafN); return `<svg width="19" height="22" viewBox="0 0 120 140"><defs><linearGradient id="${gid}" x1="30" y1="0" x2="60" y2="140" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#2f9bd6"/><stop offset="0.26" stop-color="#1d95a8"/><stop offset="0.48" stop-color="#2f9e58"/><stop offset="0.7" stop-color="#7fae2e"/><stop offset="0.85" stop-color="#e0b224"/><stop offset="1" stop-color="#e2703a"/></linearGradient></defs><g fill="none" stroke="url(#${gid})" stroke-linecap="round"><path d="M53 28 A11.5 11.5 0 1 1 68 25" stroke-width="6"/><path d="M61 36 C74 40 92 34 108 22" stroke-width="6"/><path d="M55 36 C46 28 37 19 29 9" stroke-width="5.5"/><path d="M59 36 C56 47 52 57 48 67" stroke-width="8"/><path d="M48 67 C57 65 66 69 69 77 C72 86 68 97 61 105" stroke-width="8"/><path d="M69 79 C76 90 79 102 77 114" stroke-width="6.5"/><path d="M48 67 C44 80 38 91 31 99 C25 107 17 118 9 129" stroke-width="8"/></g></svg>`; },
   };
-  const logoHTML = `<div class="logo"><div class="logo-mark">${I.leaf}</div><div class="logo-name">Herba<span>Forms</span></div></div>`;
+  const logoHTML = () => `<div class="logo"><div class="logo-mark">${I.leaf}</div><div class="logo-name">Herba<span>Forms</span></div></div>`;
 
   // ---------- navigatie per rol ----------
   function navItems() {
@@ -574,7 +577,7 @@
     $app.innerHTML = `
       <div class="shell">
         <aside class="sidebar">
-          ${logoHTML}
+          ${logoHTML()}
           <nav class="nav">${items.map(link).join('')}</nav>
           <div class="sidebar-footer">
             <div class="user-chip">
@@ -590,7 +593,7 @@
         </aside>
         <div>
           <header class="topbar">
-            ${logoHTML}
+            ${logoHTML()}
             <div class="topbar-actions">
               <button class="icon-btn" data-theme-toggle title="${t('theme.switch')}">${I.moon}</button>
               <button class="icon-btn" data-lang-toggle title="${t('set.lang')}">${LANG === 'nl' ? 'EN' : 'NL'}</button>
@@ -664,10 +667,10 @@
 
   const chartCardsHTML = () => `
       <div class="grid-2">
-        <div class="card"><div class="card-head"><div>
+        <div class="card a-chart-w"><div class="card-head"><div>
           <div class="card-title">${t('chart.weight')}</div><div class="card-sub">${t('chart.weight.sub')}</div></div></div>
           <div id="chart-weight"></div></div>
-        <div class="card"><div class="card-head"><div>
+        <div class="card a-chart-e"><div class="card-head"><div>
           <div class="card-title">${t('chart.energy')}</div><div class="card-sub">${t('chart.energy.sub')}</div></div></div>
           <div id="chart-energy"></div></div>
       </div>`;
@@ -992,7 +995,7 @@
     const first = state.user.name.split(' ')[0];
 
     const intakePrompt = (!profile || !profile.completed) ? `
-      <div class="card" style="border-color:var(--accent);background:var(--accent-soft)">
+      <div class="card a-alert" style="border-color:var(--accent);background:var(--accent-soft)">
         <div class="card-head" style="margin-bottom:8px"><div>
           <div class="card-title">${t('home.intake.title')}</div>
           <div class="card-sub">${t('home.intake.sub')}</div>
@@ -1001,7 +1004,7 @@
       </div>` : '';
 
     const progressCard = s.progress != null ? `
-      <div class="card">
+      <div class="card a-progress">
         <div class="card-head" style="margin-bottom:10px"><div>
           <div class="card-title">${t('home.progress.title')}</div>
           <div class="card-sub">${t('home.progress.sub', { a: fmtNum(s.start), b: fmtNum(s.goal) })}</div>
@@ -1011,13 +1014,14 @@
 
     const recent = checkins.slice(-3).reverse();
 
+    root.classList.add('mag', 'mag-home');
     root.innerHTML = `
-      <div class="page-head"><div>
+      <div class="page-head a-head"><div>
         <h1>${greet}, ${esc(first)} 👋</h1>
         <p class="sub">${s.count ? t('home.sub.some', { n: s.count }) : t('home.sub.none')}</p>
       </div><a class="btn" href="#/checkin">${t('home.newcheckin')}</a></div>
       ${intakePrompt}
-      <div class="tile-row">
+      <div class="tile-row a-tiles">
         <div class="tile"><span class="tile-label">${t('tile.weight')}</span>
           <span class="tile-value">${fmtNum(s.current)}<small>kg</small></span>
           ${s.delta != null ? deltaHTML(s.delta, { goodWhenDown: s.goal == null || s.goal < s.start }) : ''}</div>
@@ -1031,7 +1035,7 @@
       ${progressCard}
       ${chartCardsHTML()}
       <div class="grid-2">
-        <div class="card">
+        <div class="card a-recent">
           <div class="card-head"><div><div class="card-title">${t('home.recent')}</div></div>
             <a href="#/historie" style="font-size:13.5px;font-weight:650">${t('home.viewall')}</a></div>
           ${recent.length ? `<div class="list">${recent.map((c) => `
@@ -1042,7 +1046,7 @@
             </div>`).join('')}</div>`
           : `<div class="empty"><p>${t('home.nocheckins')}</p></div>`}
         </div>
-        <div class="card">
+        <div class="card a-aside">
           <div class="card-head"><div><div class="card-title">${t('home.coach')}</div></div></div>
           ${coach ? `<div class="person-row">
               <div class="avatar">${esc(initials(coach.name))}</div>
@@ -1384,8 +1388,9 @@
     const s = memberStats(profile, checkins);
     const backHref = state.user.role === 'admin' ? '#/deelnemers' : '#/';
 
+    root.classList.add('mag', 'mag-detail');
     root.innerHTML = `
-      <div class="page-head">
+      <div class="page-head a-head">
         <div>
           <a href="${backHref}" style="font-size:13.5px;font-weight:650">${t('co.back')}</a>
           <h1 style="margin-top:6px">${esc(user.name)}</h1>
@@ -1393,7 +1398,7 @@
         </div>
         <button class="btn ghost" data-resetpw>${t('btn.resetpw')}</button>
       </div>
-      <div class="tile-row">
+      <div class="tile-row a-tiles">
         <div class="tile"><span class="tile-label">${t('tile.weight')}</span>
           <span class="tile-value">${fmtNum(s.current)}<small>kg</small></span>
           ${s.delta != null ? deltaHTML(s.delta, { goodWhenDown: s.goal == null || s.goal < s.start }) : ''}</div>
@@ -1406,11 +1411,11 @@
       </div>
       ${chartCardsHTML()}
       <div class="grid-2">
-        <div class="card">
+        <div class="card a-recent">
           <div class="card-head"><div><div class="card-title">${t('co.intake')}</div></div></div>
           ${profile && profile.completed ? intakeDetailHTML(profile) : `<div class="empty"><p>${t('co.intake.empty')}</p></div>`}
         </div>
-        <div class="card">
+        <div class="card a-aside">
           <div class="card-head"><div><div class="card-title">${t('co.notes')}</div>
             <div class="card-sub">${t('co.notes.sub')}</div></div></div>
           <form data-notef style="display:flex;gap:8px;margin-bottom:10px">
@@ -1420,7 +1425,7 @@
           <div data-notes>${notesHTML(notes)}</div>
         </div>
       </div>
-      <div class="card">
+      <div class="card a-full">
         <div class="card-head"><div><div class="card-title">${t('co.allcheckins')}</div></div></div>
         ${checkinTable(checkins)}
       </div>`;
@@ -1523,20 +1528,21 @@
     const root = shell(`<div class="skeleton">${t('loading')}</div>`);
     const [o, u] = await Promise.all([api('/admin/overview'), api('/admin/users')]);
     const silent = u.members.filter((m) => m.active && (daysAgo(m.last_checkin) == null || daysAgo(m.last_checkin) > 7));
+    root.classList.add('mag', 'mag-admin');
     root.innerHTML = `
-      <div class="page-head"><div><h1>${t('ad.title')}</h1>
+      <div class="page-head a-head"><div><h1>${t('ad.title')}</h1>
         <p class="sub">${t('ad.sub')}</p></div></div>
-      <div class="tile-row">
+      <div class="tile-row a-tiles">
         <div class="tile"><span class="tile-label">${t('ad.tile.members')}</span><span class="tile-value">${o.members}</span></div>
         <div class="tile"><span class="tile-label">${t('ad.tile.coaches')}</span><span class="tile-value">${o.coaches}</span></div>
         <div class="tile"><span class="tile-label">${t('ad.tile.checkins')}</span><span class="tile-value">${o.checkins_week}</span></div>
         <div class="tile"><span class="tile-label">${t('ad.tile.active')}</span><span class="tile-value">${o.active_week}<small>${t('ad.of', { n: o.members })}</small></span></div>
       </div>
-      ${o.unassigned ? `<div class="card" style="border-color:var(--warn-text)">
+      ${o.unassigned ? `<div class="card a-alert" style="border-color:var(--warn-text)">
         <b>${t('ad.unassigned', { n: o.unassigned })}</b>
         <p style="color:var(--ink-2);font-size:14px;margin-top:4px">${t('ad.unassigned.link')} <a href="#/deelnemers">${t('nav.members')}</a>.</p>
       </div>` : ''}
-      <div class="card">
+      <div class="card a-full">
         <div class="card-head"><div><div class="card-title">${t('ad.attention')}</div>
           <div class="card-sub">${t('ad.attention.sub')}</div></div></div>
         ${silent.length ? `<div class="list">${silent.slice(0, 8).map((m) => `

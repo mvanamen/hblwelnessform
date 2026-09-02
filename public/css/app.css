@@ -125,11 +125,20 @@ button { font: inherit; }
 
 .app-root { min-height: 100dvh; }
 
-.shell { display: grid; grid-template-columns: 250px 1fr; min-height: 100dvh; }
+.shell {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-areas: "header" "main";
+  min-height: 100dvh;
+  transition: grid-template-columns .2s ease;
+}
+/* de wrapper rond topbar/main/tabbar doet niet mee in de grid */
+.shell > div:not(.sidebar) { display: contents; }
 
 .sidebar {
+  grid-area: nav;
   position: sticky; top: 0; height: 100dvh;
-  display: flex; flex-direction: column; gap: 8px;
+  display: none; flex-direction: column; gap: 8px;
   padding: 20px 14px;
   background: linear-gradient(180deg, var(--brand-deep), #123020 65%, #0f2a1c);
   color: #eaf3e6;
@@ -168,47 +177,54 @@ button { font: inherit; }
 }
 .icon-btn:hover { background: rgba(255,255,255,.1); color: #fff; }
 
-.main { min-width: 0; padding: 28px clamp(16px, 4vw, 44px) 90px; }
+.main { grid-area: main; min-width: 0; padding: 20px 16px 96px; }
 .main-inner { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
 
 .page-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
 .page-head h1 { font-size: clamp(22px, 3vw, 28px); }
 .page-head .sub { color: var(--ink-2); margin-top: 4px; font-size: 14.5px; }
 
-/* mobiel: topbar + tabbar */
-.topbar { display: none; }
-.tabbar { display: none; }
+/* header (mobiel/tablet-smal): topbar */
+.topbar {
+  grid-area: header;
+  position: sticky; top: 0; z-index: 40;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
+  background: var(--brand-deep); color: #fff;
+}
+.topbar .logo { display: flex; align-items: center; gap: 9px; }
+.topbar .logo-mark { width: 30px; height: 30px; border-radius: 8px; }
+.topbar .logo-name { font-size: 16px; }
+.topbar-actions { display: flex; gap: 8px; }
+/* 16px voorkomt dat iOS inzoomt bij focus op een invoerveld */
+.input, select.input, textarea.input { font-size: 16px; }
+.tabbar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+  background: var(--surface);
+  border-top: 1px solid var(--hairline);
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+}
+.tabbar a {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 7px 4px 5px; border-radius: 12px;
+  color: var(--ink-3); font-size: 11px; font-weight: 600;
+}
+.tabbar a.active { color: var(--brand); background: var(--brand-tint); }
+.tabbar a svg { display: block; }
 
-@media (max-width: 920px) {
-  .shell { grid-template-columns: 1fr; }
-  .sidebar { display: none; }
-  .topbar {
-    position: sticky; top: 0; z-index: 40;
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
-    background: var(--brand-deep); color: #fff;
-  }
-  /* 16px voorkomt dat iOS inzoomt bij focus op een invoerveld */
-  .input, select.input, textarea.input { font-size: 16px; }
-  .topbar .logo { display: flex; align-items: center; gap: 9px; }
-  .topbar .logo-mark { width: 30px; height: 30px; border-radius: 8px; }
-  .topbar .logo-name { font-size: 16px; }
-  .topbar-actions { display: flex; gap: 8px; }
-  .main { padding: 20px 16px 96px; }
-  .tabbar {
-    position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
-    display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
-    background: var(--surface);
-    border-top: 1px solid var(--hairline);
-    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
-  }
-  .tabbar a {
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-    padding: 7px 4px 5px; border-radius: 12px;
-    color: var(--ink-3); font-size: 11px; font-weight: 600;
-  }
-  .tabbar a.active { color: var(--brand); background: var(--brand-tint); }
-  .tabbar a svg { display: block; }
+/* Tablet: nav-kolom + main ernaast */
+@media (min-width: 768px) {
+  .shell { grid-template-columns: 220px 1fr; grid-template-areas: "nav main"; }
+  .sidebar { display: flex; }
+  .topbar, .tabbar { display: none; }
+  .main { padding: 28px clamp(16px, 4vw, 44px) 60px; }
+  .input, select.input, textarea.input { font-size: 15.5px; }
+}
+
+/* Desktop: bredere nav-kolom */
+@media (min-width: 1024px) {
+  .shell { grid-template-columns: 250px 1fr; }
 }
 
 /* ---------- Kaarten & tegels ---------- */
@@ -245,7 +261,59 @@ button { font: inherit; }
 .tile-delta.flat { color: var(--ink-3); }
 
 .grid-2 { display: grid; gap: 18px; grid-template-columns: 1fr 1fr; }
-@media (max-width: 860px) { .grid-2 { grid-template-columns: 1fr; } }
+@media (max-width: 767.98px) { .grid-2 { grid-template-columns: 1fr; } }
+
+/* ---------- Magazine-layout (dashboardpagina's) ----------
+   Elke variant heeft een eigen areas-template zodat er geen lege
+   rijen (dubbele gaps) ontstaan bij ontbrekende blokken. */
+.main-inner.mag {
+  display: grid; gap: 18px;
+  grid-template-columns: 1fr;
+  transition: grid-template-columns .2s ease;
+}
+.mag .grid-2 { display: contents; }
+.a-head { grid-area: head; } .a-alert { grid-area: alert; }
+.a-tiles { grid-area: tiles; } .a-progress { grid-area: progress; }
+.a-chart-w { grid-area: chw; } .a-chart-e { grid-area: che; }
+.a-recent { grid-area: recent; } .a-aside { grid-area: aside; }
+.a-full { grid-area: full; }
+
+.mag-home  { grid-template-areas: "head" "alert" "tiles" "progress" "chw" "che" "recent" "aside"; }
+.mag-detail { grid-template-areas: "head" "tiles" "chw" "che" "recent" "aside" "full"; }
+.mag-admin { grid-template-areas: "head" "tiles" "alert" "full"; }
+
+@media (min-width: 768px) {
+  .main-inner.mag { grid-template-columns: 1fr 1fr; }
+  .mag-home {
+    grid-template-areas:
+      "head head" "alert alert" "tiles tiles" "progress progress"
+      "chw che" "recent aside";
+  }
+  .mag-detail {
+    grid-template-areas:
+      "head head" "tiles tiles" "chw che" "recent aside" "full full";
+  }
+  .mag-admin {
+    grid-template-areas: "head head" "tiles tiles" "alert alert" "full full";
+  }
+}
+@media (min-width: 1024px) {
+  .mag-home, .mag-detail { grid-template-columns: 1.1fr 0.9fr 1fr; }
+  .mag-home {
+    grid-template-areas:
+      "head head head" "alert alert alert" "tiles tiles tiles"
+      "progress progress progress"
+      "chw chw che"
+      "recent recent aside";
+  }
+  .mag-detail {
+    grid-template-areas:
+      "head head head" "tiles tiles tiles"
+      "chw chw che"
+      "recent recent aside"
+      "full full full";
+  }
+}
 
 /* ---------- Knoppen ---------- */
 
