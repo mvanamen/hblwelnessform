@@ -601,9 +601,9 @@
             </div>
           </header>
           <main class="main"><div class="main-inner">${contentHTML}</div></main>
-          <nav class="tabbar">${items.map(link).join('')}</nav>
         </div>
       </div>`;
+    GooeyDock.update(items, items.findIndex((n) => n.href === cur));
     $app.querySelectorAll('[data-logout]').forEach((b) => b.onclick = logout);
     $app.querySelectorAll('[data-theme-toggle]').forEach((b) => b.onclick = cycleTheme);
     $app.querySelectorAll('[data-lang-toggle]').forEach((b) => b.onclick = () => setLang(LANG === 'nl' ? 'en' : 'nl'));
@@ -1761,6 +1761,7 @@
 
   async function route() {
     closeModal();
+    if (!state.user || state.user.must_change_password) GooeyDock.hide();
     const join = (location.hash || '').match(/^#\/join\/([a-f0-9]{32})$/i);
     if (join) {
       if (state.user) { location.hash = '#/'; return; }

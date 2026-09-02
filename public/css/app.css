@@ -206,33 +206,49 @@ button { font: inherit; }
   border-top: 1px solid var(--hairline);
   padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
 }
-.tabbar { overflow: visible; }
-.tabbar a {
-  position: relative;
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 7px 4px 5px; border-radius: 12px;
+/* ---------- GooeyDock (mobiele navigatie) ---------- */
+#dock-root { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; }
+@media (max-width: 767.98px) { #dock-root.on { display: block; } }
+@media (min-width: 768px) { #dock-root { display: none !important; } }
+.dock-bar { display: block; width: 100%; }
+.dock-fill { fill: var(--surface); }
+.dock-edge { fill: none; stroke: var(--hairline); stroke-width: 1; }
+.dock-safe { height: env(safe-area-inset-bottom); background: var(--surface); }
+.dock-items {
+  position: absolute; left: 0; right: 0; bottom: env(safe-area-inset-bottom);
+  height: 58px;
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+  padding: 0 8px;
+}
+.dock-items a {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
   color: var(--ink-3); font-size: 11px; font-weight: 600;
+  -webkit-tap-highlight-color: transparent;
 }
-.tabbar a svg { display: block; }
-/* actieve tab: icoon in een zwevende bubbel die uit de balk omhoog steekt */
-.tabbar a.active { color: var(--brand); padding-top: 29px; }
-.tabbar a.active span { position: relative; z-index: 2; }
-/* de "hap" uit de balk: cirkel in de paginakleur achter de bubbel */
-.tabbar a.active::before {
-  content: ""; position: absolute; top: -27px; left: 50%; translate: -50% 0;
-  width: 62px; height: 62px; border-radius: 50%;
-  background: var(--page);
-  animation: bubble-in .22s ease;
+.dock-items .dock-ic { position: relative; display: block; transition: opacity .18s ease; }
+.dock-items a.on .dock-ic { opacity: 0; }          /* icoon "zit in de bol" */
+.dock-items a.on { color: var(--brand); }
+.dock-badge {
+  position: absolute; top: -3px; right: -5px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--danger); border: 2px solid var(--surface);
 }
-.tabbar a.active svg {
-  position: absolute; top: -21px; left: 50%; translate: -50% 0; z-index: 1;
-  width: 46px; height: 46px; padding: 12px; box-sizing: border-box;
-  background: var(--brand); color: #fff; border-radius: 50%;
+.dock-items a.on .dock-badge { display: none; }
+.dock-bubble {
+  position: absolute; top: 0; left: 0;
+  width: 46px; height: 46px; border-radius: 50%;
+  background: var(--brand);
+  display: grid; place-items: center;
   box-shadow: 0 8px 18px -8px rgba(0, 0, 0, .45);
-  animation: bubble-in .22s ease;
+  will-change: transform;
+  pointer-events: none;
+  contain: layout paint;
 }
-@keyframes bubble-in {
-  from { scale: .5; opacity: 0; }
+.dock-bubble-icon { display: grid; place-items: center; color: #fff; }
+.dock-bubble-icon svg { display: block; }
+.dock-bubble-icon.swap { animation: dock-swap .18s ease; }
+@keyframes dock-swap {
+  from { scale: .35; opacity: 0; }
   to { scale: 1; opacity: 1; }
 }
 
