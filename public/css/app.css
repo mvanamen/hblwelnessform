@@ -128,6 +128,7 @@ button { font: inherit; }
 .shell {
   display: grid;
   grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
   grid-template-areas: "header" "main";
   min-height: 100dvh;
   transition: grid-template-columns .2s ease;
@@ -205,17 +206,31 @@ button { font: inherit; }
   border-top: 1px solid var(--hairline);
   padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
 }
+.tabbar { overflow: visible; }
 .tabbar a {
+  position: relative;
   display: flex; flex-direction: column; align-items: center; gap: 3px;
   padding: 7px 4px 5px; border-radius: 12px;
   color: var(--ink-3); font-size: 11px; font-weight: 600;
 }
-.tabbar a.active { color: var(--brand); background: var(--brand-tint); }
 .tabbar a svg { display: block; }
+/* actieve tab: icoon in een zwevende bubbel die uit de balk omhoog steekt */
+.tabbar a.active { color: var(--brand); padding-top: 29px; }
+.tabbar a.active svg {
+  position: absolute; top: -21px; left: 50%; translate: -50% 0;
+  width: 46px; height: 46px; padding: 12px; box-sizing: border-box;
+  background: var(--brand); color: #fff; border-radius: 50%;
+  box-shadow: 0 0 0 6px var(--page), 0 8px 18px -8px rgba(0, 0, 0, .5);
+  animation: bubble-in .22s ease;
+}
+@keyframes bubble-in {
+  from { scale: .5; opacity: 0; }
+  to { scale: 1; opacity: 1; }
+}
 
 /* Tablet: nav-kolom + main ernaast */
 @media (min-width: 768px) {
-  .shell { grid-template-columns: 220px 1fr; grid-template-areas: "nav main"; }
+  .shell { grid-template-columns: 220px 1fr; grid-template-rows: 1fr; grid-template-areas: "nav main"; }
   .sidebar { display: flex; }
   .topbar, .tabbar { display: none; }
   .main { padding: 28px clamp(16px, 4vw, 44px) 60px; }
@@ -238,7 +253,8 @@ button { font: inherit; }
 }
 .card-title { font-size: 15px; font-weight: 700; }
 .card-sub { color: var(--ink-2); font-size: 13px; margin-top: 2px; }
-.card-head { display: flex; align-items: start; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.card-head { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.card-head > div:first-child { min-width: 0; }
 
 .tile-row {
   display: grid; gap: 12px;
@@ -372,7 +388,7 @@ textarea.input { resize: vertical; min-height: 84px; }
 
 /* ---------- Tabellen & lijsten ---------- */
 
-.table-wrap { overflow-x: auto; margin: 0 -20px; padding: 0 20px; }
+.table-wrap { overflow-x: auto; margin: 0 -20px; padding: 0 20px; -webkit-overflow-scrolling: touch; max-width: calc(100% + 40px); }
 table.table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .table th {
   text-align: left; color: var(--ink-3); font-size: 12.5px; font-weight: 650;
