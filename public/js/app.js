@@ -183,6 +183,12 @@
       'del.text.coach': 'Dit verwijdert het account permanent. De deelnemers van deze coach blijven bestaan maar staan daarna zonder coach. Dit kan niet ongedaan worden gemaakt.',
       'del.text.admin': 'Dit verwijdert het beheerdersaccount permanent. Dit kan niet ongedaan worden gemaakt.',
       'del.confirm': 'Definitief verwijderen',
+      'su.del.btn': 'Tenant verwijderen',
+      'su.del.title': '{name} definitief verwijderen?',
+      'su.del.text': 'Dit wist deze tenant permanent, inclusief álle beheerders, coaches, deelnemers, check-ins en overige gegevens. Dit kan niet ongedaan worden gemaakt. Alleen tijdelijk dicht? Zet de tenant dan op inactief.',
+      'su.del.type': 'Typ ter bevestiging de slug ({slug}):',
+      'su.del.done': 'Tenant verwijderd',
+      'err.confirm_slug_mismatch': 'De ingevoerde slug klopt niet',
       'del.done': 'Gebruiker verwijderd',
       'err.missing_credentials': 'Vul e-mail en wachtwoord in',
       'err.invalid_credentials': 'Onjuiste inloggegevens',
@@ -401,6 +407,12 @@
       'del.text.coach': 'This permanently deletes the account. Members of this coach remain but will be left without a coach. This cannot be undone.',
       'del.text.admin': 'This permanently deletes the administrator account. This cannot be undone.',
       'del.confirm': 'Delete permanently',
+      'su.del.btn': 'Delete tenant',
+      'su.del.title': 'Permanently delete {name}?',
+      'su.del.text': 'This permanently erases this tenant, including all administrators, coaches, members, check-ins and other data. This cannot be undone. Only closing temporarily? Set the tenant to inactive instead.',
+      'su.del.type': 'Type the slug to confirm ({slug}):',
+      'su.del.done': 'Tenant deleted',
+      'err.confirm_slug_mismatch': 'The slug you typed does not match',
       'del.done': 'User deleted',
       'err.missing_credentials': 'Please enter email and password',
       'err.invalid_credentials': 'Incorrect email or password',
@@ -1936,6 +1948,33 @@
 
   // ---------- Superadmin (platformbeheer) ----------
 
+  function deleteTenantModal(tn, onDone) {
+    const m = modal(`
+      <h3>${t('su.del.title', { name: esc(tn.name) })}</h3>
+      <p style="color:var(--ink-2)">${t('su.del.text')}</p>
+      <form data-f style="display:flex;flex-direction:column;gap:14px">
+        <div class="field"><label>${t('su.del.type', { slug: `<b>${esc(tn.slug)}</b>` })}</label>
+          <input class="input" name="confirm" autocomplete="off" placeholder="${esc(tn.slug)}"></div>
+        <div class="modal-actions">
+          <button class="btn ghost" type="button" data-x>${t('btn.cancel')}</button>
+          <button class="btn danger" type="submit" disabled>${t('del.confirm')}</button>
+        </div>
+      </form>`);
+    const input = m.querySelector('[name=confirm]');
+    const submit = m.querySelector('button[type=submit]');
+    input.oninput = () => { submit.disabled = input.value.trim().toLowerCase() !== tn.slug.toLowerCase(); };
+    m.querySelector('[data-x]').onclick = closeModal;
+    m.querySelector('[data-f]').onsubmit = async (e) => {
+      e.preventDefault();
+      try {
+        await api('/super/tenants/' + tn.id, { method: 'DELETE', body: { confirm_slug: input.value } });
+        toast(t('su.del.done'));
+        closeModal();
+        onDone();
+      } catch (err) { toast(err.message, true); }
+    };
+  }
+
   async function superHome() {
     const root = shell(`<div class="skeleton">${t('loading')}</div>`);
     const { tenants } = await api('/super/tenants');
@@ -2013,12 +2052,17 @@
             <option value="1"${tn.active ? ' selected' : ''}>${t('modal.active')}</option>
             <option value="0"${!tn.active ? ' selected' : ''}>${t('modal.inactive')}</option>
           </select></div>`}
-        <div class="modal-actions">
-          <button class="btn ghost" type="button" data-x>${t('btn.cancel')}</button>
-          <button class="btn" type="submit">${isNew ? t('btn.create') : t('btn.save')}</button>
+        <div class="modal-actions" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+          ${isNew ? '<span></span>' : `<button class="btn danger" type="button" data-del>${t('su.del.btn')}</button>`}
+          <div style="display:flex;gap:10px">
+            <button class="btn ghost" type="button" data-x>${t('btn.cancel')}</button>
+            <button class="btn" type="submit">${isNew ? t('btn.create') : t('btn.save')}</button>
+          </div>
         </div>
       </form>`);
     m.querySelector('[data-x]').onclick = closeModal;
+    const delBtn = m.querySelector('[data-del]');
+    if (delBtn) delBtn.onclick = () => { closeModal(); deleteTenantModal(tn, onDone); };
     m.querySelector('[data-f]').onsubmit = async (e) => {
       e.preventDefault();
       const f = new FormData(e.target);

@@ -1,6 +1,6 @@
 /* HerbaForms service worker — netwerk-eerst, cache als vangnet.
    API-verkeer wordt nooit gecachet. */
-const CACHE = 'hf-v8';
+const CACHE = 'hf-v9';
 const ASSETS = ['/', '/css/app.css', '/js/app.js', '/js/charts.js', '/js/dock.js', '/manifest.webmanifest', '/img/icon-192.png'];
 
 self.addEventListener('install', (e) => {

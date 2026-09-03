@@ -613,6 +613,24 @@ app.put('/api/super/tenants/:id', requireSuper, (req, res) => {
   res.json({ tenant: db.prepare('SELECT * FROM tenants WHERE id = ?').get(t.id) });
 });
 
+app.delete('/api/super/tenants/:id', requireSuper, (req, res) => {
+  const t = db.prepare('SELECT * FROM tenants WHERE id = ?').get(req.params.id);
+  if (!t) return res.status(404).json({ error: 'tenant_not_found' });
+  // Destructieve platformactie: de client moet de slug ter bevestiging meesturen.
+  if (String(req.body?.confirm_slug || '').trim().toLowerCase() !== t.slug.toLowerCase()) {
+    return res.status(400).json({ error: 'confirm_slug_mismatch' });
+  }
+  db.transaction(() => {
+    // Cascades op user-niveau ruimen profielen, check-ins, notities,
+    // resets en sessies op; daarna de tenant-gebonden restjes en de tenant zelf.
+    db.prepare('DELETE FROM users WHERE tenant_id = ?').run(t.id);
+    db.prepare('DELETE FROM coach_invites WHERE tenant_id = ?').run(t.id);
+    db.prepare('UPDATE sessions SET acting_tenant_id = NULL WHERE acting_tenant_id = ?').run(t.id);
+    db.prepare('DELETE FROM tenants WHERE id = ?').run(t.id);
+  })();
+  res.json({ ok: true });
+});
+
 app.post('/api/super/tenants/:id/act-as', requireSuper, (req, res) => {
   const t = db.prepare('SELECT * FROM tenants WHERE id = ? AND active = 1').get(req.params.id);
   if (!t) return res.status(404).json({ error: 'tenant_not_found' });
