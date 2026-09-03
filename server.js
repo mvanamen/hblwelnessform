@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('./src/db');
-const { createSession, destroySession, currentUser, requireRole, cleanupExpiredSessions } = require('./src/auth');
+const { createSession, destroySession, currentUser, requireRole, requireSuper, setActingTenant, cleanupExpiredSessions } = require('./src/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,6 +21,28 @@ const publicUser = (u) => ({
 
 const tempPassword = () => 'HF-' + crypto.randomBytes(4).toString('hex');
 
+// ---------- Tenant-helpers ----------
+
+// Tenant-context voor pre-auth requests: expliciete slug van de client,
+// anders de Host-header via custom_domain (dekt hblwellnessform.com nu,
+// en eigen domeinen per tenant later). Ingelogde requests gebruiken
+// req.user.tenant_id.
+function requestHost(req) {
+  return String(req.headers['x-forwarded-host'] || req.headers.host || '').split(':')[0];
+}
+function tenantFromRequest(req) {
+  const slug = String(req.body?.tenant || req.query.tenant || '').trim();
+  if (slug) return db.prepare('SELECT * FROM tenants WHERE slug = ? AND active = 1').get(slug) || null;
+  const host = requestHost(req);
+  if (!host) return null;
+  return db.prepare('SELECT * FROM tenants WHERE custom_domain = ? AND active = 1').get(host) || null;
+}
+const tenantById = (id) => (id ? db.prepare('SELECT * FROM tenants WHERE id = ?').get(id) : null);
+const publicTenant = (t) => (t ? {
+  slug: t.slug, name: t.name, logo_url: t.logo_url,
+  color_brand: t.color_brand, color_brand_deep: t.color_brand_deep, color_accent: t.color_accent,
+} : null);
+
 const getProfile = db.prepare('SELECT * FROM profiles WHERE user_id = ?');
 const getCheckins = db.prepare('SELECT * FROM checkins WHERE user_id = ? ORDER BY date ASC');
 
@@ -35,14 +57,20 @@ function memberSnapshot(member) {
 app.post('/api/login', (req, res) => {
   const { email, password } = req.body || {};
   if (!email || !password) return res.status(400).json({ error: 'missing_credentials' });
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(String(email).trim());
+  const tenant = tenantFromRequest(req);
+  // Binnen tenant-context wint het tenant-account bij een dubbel e-mailadres;
+  // de superadmin kan overal inloggen. Zonder context (portal) alleen superadmin.
+  const user = tenant
+    ? db.prepare(`SELECT * FROM users WHERE email = ? AND (tenant_id = ? OR role = 'superadmin')
+                  ORDER BY (tenant_id IS NULL) LIMIT 1`).get(String(email).trim(), tenant.id)
+    : db.prepare(`SELECT * FROM users WHERE email = ? AND role = 'superadmin'`).get(String(email).trim());
   const pw = String(password);
   if (!user || !user.active ||
       (!bcrypt.compareSync(pw, user.password_hash) && !bcrypt.compareSync(pw.trim(), user.password_hash))) {
     return res.status(401).json({ error: 'invalid_credentials' });
   }
   createSession(res, user.id);
-  res.json({ user: publicUser(user) });
+  res.json({ user: publicUser(user), tenant: publicTenant(tenantById(user.tenant_id)) });
 });
 
 app.post('/api/logout', (req, res) => {
@@ -53,10 +81,15 @@ app.post('/api/logout', (req, res) => {
 app.get('/api/me', (req, res) => {
   const user = currentUser(req);
   if (!user) return res.status(401).json({ error: 'not_logged_in' });
-  res.json({ user: publicUser(user), profile: getProfile.get(user.id) || null });
+  res.json({
+    user: publicUser(user),
+    profile: getProfile.get(user.id) || null,
+    tenant: publicTenant(tenantById(user.tenant_id)),
+    acting: user.real_role === 'superadmin' && user.role === 'admin',
+  });
 });
 
-app.post('/api/password', requireRole('admin', 'coach', 'member'), (req, res) => {
+app.post('/api/password', requireRole('admin', 'coach', 'member', 'superadmin'), (req, res) => {
   const { current, next } = req.body || {};
   const nextPw = String(next || '').trim();
   if (nextPw.length < 8) {
@@ -74,7 +107,7 @@ app.post('/api/password', requireRole('admin', 'coach', 'member'), (req, res) =>
   res.json({ ok: true });
 });
 
-app.post('/api/language', requireRole('admin', 'coach', 'member'), (req, res) => {
+app.post('/api/language', requireRole('admin', 'coach', 'member', 'superadmin'), (req, res) => {
   const lang = req.body?.lang === 'en' ? 'en' : 'nl';
   db.prepare('UPDATE users SET lang = ? WHERE id = ?').run(lang, req.user.id);
   res.json({ ok: true });
@@ -103,7 +136,13 @@ app.post('/api/forgot', async (req, res) => {
   if (!email.includes('@')) return;
   const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || '';
   if (!forgotAllowed(email.toLowerCase()) || !forgotAllowed('ip:' + ip)) return;
-  const user = db.prepare('SELECT * FROM users WHERE email = ? AND active = 1').get(email);
+  // E-mail is uniek per tenant: de tenant-context (slug van de client of
+  // Host-header) bepaalt wélk account bedoeld wordt. Zonder context alleen
+  // de superadmin.
+  const tenant = tenantFromRequest(req);
+  const user = tenant
+    ? db.prepare('SELECT * FROM users WHERE email = ? AND tenant_id = ? AND active = 1').get(email, tenant.id)
+    : db.prepare(`SELECT * FROM users WHERE email = ? AND role = 'superadmin' AND active = 1`).get(email);
   if (!user) return;
   const lang = req.body?.lang === 'en' || req.body?.lang === 'nl'
     ? req.body.lang
@@ -113,10 +152,11 @@ app.post('/api/forgot', async (req, res) => {
   db.prepare('INSERT INTO password_resets (token_hash, user_id, expires_at) VALUES (?, ?, ?)')
     .run(sha256(token), user.id, Date.now() + 60 * 60 * 1000);
   const proto = req.headers['x-forwarded-proto'] || 'http';
-  const host = req.headers['x-forwarded-host'] || req.headers.host;
-  const link = `${proto}://${host}/#/reset/${token}`;
-  const { subject, html } = resetEmailHTML(lang, user.name.split(' ')[0], link);
-  const result = await sendMail({ to: user.email, subject, html });
+  const link = tenant?.custom_domain
+    ? `https://${tenant.custom_domain}/#/reset/${token}`
+    : `${proto}://${req.headers['x-forwarded-host'] || req.headers.host}/#/reset/${token}`;
+  const { subject, html } = resetEmailHTML(lang, user.name.split(' ')[0], link, tenant);
+  const result = await sendMail({ to: user.email, subject, html, fromName: tenant?.mail_from_name });
   if (result.dev) console.log(`[mail] Reset-link voor ${user.email}: ${link}`);
 });
 
@@ -128,8 +168,11 @@ function resetRowByToken(token) {
 }
 
 app.get('/api/reset/:token', (req, res) => {
-  if (!resetRowByToken(req.params.token)) return res.status(404).json({ error: 'invalid_reset' });
-  res.json({ ok: true });
+  const row = resetRowByToken(req.params.token);
+  if (!row) return res.status(404).json({ error: 'invalid_reset' });
+  // Tenant meesturen zodat de resetpagina de juiste branding en context zet.
+  const u = db.prepare('SELECT tenant_id FROM users WHERE id = ?').get(row.user_id);
+  res.json({ ok: true, tenant: publicTenant(tenantById(u?.tenant_id)) });
 });
 
 app.post('/api/reset', (req, res) => {
@@ -154,37 +197,43 @@ function ensureInviteToken(userId) {
   return token;
 }
 
+// Persoonlijke invite-links horen bij een tenant-account; een superadmin
+// (tenant_id NULL) zou deelnemers zonder tenant opleveren — dus geblokkeerd.
 app.post('/api/coach/invite-link', requireRole('coach'), (req, res) => {
+  if (req.user.real_role === 'superadmin') return res.status(403).json({ error: 'forbidden' });
   res.json({ token: ensureInviteToken(req.user.id) });
 });
 
 app.post('/api/coach/invite-link/regenerate', requireRole('coach'), (req, res) => {
+  if (req.user.real_role === 'superadmin') return res.status(403).json({ error: 'forbidden' });
   db.prepare('UPDATE users SET invite_token = NULL WHERE id = ?').run(req.user.id);
   res.json({ token: ensureInviteToken(req.user.id) });
 });
 
 const inviterByToken = (token) => (!token || !/^[a-f0-9]{32}$/.test(token)) ? null :
-  db.prepare(`SELECT id, name, role FROM users WHERE invite_token = ? AND active = 1 AND role IN ('coach','admin')`).get(token);
+  db.prepare(`SELECT id, name, role, tenant_id FROM users
+              WHERE invite_token = ? AND active = 1 AND role IN ('coach','admin') AND tenant_id IS NOT NULL`).get(token);
 
 // Eenmalige uitnodiging voor een nieuwe coach.
 const coachInviteByToken = (token) => (!token || !/^[a-f0-9]{32}$/.test(token)) ? null :
   db.prepare(`
-    SELECT ci.token, u.name AS creator_name FROM coach_invites ci
+    SELECT ci.token, ci.tenant_id, u.name AS creator_name FROM coach_invites ci
     JOIN users u ON u.id = ci.created_by
-    WHERE ci.token = ? AND ci.used_at IS NULL
+    WHERE ci.token = ? AND ci.used_at IS NULL AND ci.tenant_id IS NOT NULL
   `).get(token);
 
 app.post('/api/admin/coach-invite', requireRole('admin'), (req, res) => {
   const token = crypto.randomBytes(16).toString('hex');
-  db.prepare('INSERT INTO coach_invites (token, created_by) VALUES (?, ?)').run(token, req.user.id);
+  db.prepare('INSERT INTO coach_invites (token, created_by, tenant_id) VALUES (?, ?, ?)')
+    .run(token, req.user.id, req.user.tenant_id);
   res.json({ token });
 });
 
 app.get('/api/invite/:token', (req, res) => {
   const inviter = inviterByToken(req.params.token);
-  if (inviter) return res.json({ type: 'member', coach: inviter.name });
+  if (inviter) return res.json({ type: 'member', coach: inviter.name, tenant: publicTenant(tenantById(inviter.tenant_id)) });
   const ci = coachInviteByToken(req.params.token);
-  if (ci) return res.json({ type: 'coach', coach: ci.creator_name });
+  if (ci) return res.json({ type: 'coach', coach: ci.creator_name, tenant: publicTenant(tenantById(ci.tenant_id)) });
   res.status(404).json({ error: 'invalid_invite' });
 });
 
@@ -201,9 +250,9 @@ app.post('/api/register', (req, res) => {
   if (!cleanName || !cleanEmail.includes('@')) return res.status(400).json({ error: 'name_email_required' });
   try {
     const info = db.prepare(`
-      INSERT INTO users (role, name, email, password_hash, coach_id, must_change_password, lang)
-      VALUES ('member', ?, ?, ?, ?, 0, ?)
-    `).run(cleanName, cleanEmail, bcrypt.hashSync(pw, 10), inviter.id,
+      INSERT INTO users (tenant_id, role, name, email, password_hash, coach_id, must_change_password, lang)
+      VALUES (?, 'member', ?, ?, ?, ?, 0, ?)
+    `).run(inviter.tenant_id, cleanName, cleanEmail, bcrypt.hashSync(pw, 10), inviter.id,
            req.body?.lang === 'en' ? 'en' : 'nl');
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
     createSession(res, user.id);
@@ -222,9 +271,9 @@ function registerCoach(req, res, invite) {
   if (!cleanName || !cleanEmail.includes('@')) return res.status(400).json({ error: 'name_email_required' });
   try {
     const info = db.prepare(`
-      INSERT INTO users (role, name, email, password_hash, must_change_password, lang)
-      VALUES ('coach', ?, ?, ?, 0, ?)
-    `).run(cleanName, cleanEmail, bcrypt.hashSync(pw, 10),
+      INSERT INTO users (tenant_id, role, name, email, password_hash, must_change_password, lang)
+      VALUES (?, 'coach', ?, ?, ?, 0, ?)
+    `).run(invite.tenant_id, cleanName, cleanEmail, bcrypt.hashSync(pw, 10),
            req.body?.lang === 'en' ? 'en' : 'nl');
     db.prepare(`UPDATE coach_invites SET used_by = ?, used_at = datetime('now') WHERE token = ?`)
       .run(info.lastInsertRowid, invite.token);
@@ -240,7 +289,8 @@ function registerCoach(req, res, invite) {
 
 app.get('/api/member/dashboard', requireRole('member'), (req, res) => {
   const coach = req.user.coach_id
-    ? db.prepare('SELECT id, name, email FROM users WHERE id = ?').get(req.user.coach_id)
+    ? db.prepare('SELECT id, name, email FROM users WHERE id = ? AND tenant_id = ?')
+        .get(req.user.coach_id, req.user.tenant_id)
     : null;
   res.json({ ...memberSnapshot(req.user), coach });
 });
@@ -298,7 +348,8 @@ app.delete('/api/member/checkins/:id', requireRole('member'), (req, res) => {
 // ---------- Coach (admin mag ook overal bij) ----------
 
 function coachMemberOr404(req, res) {
-  const member = db.prepare(`SELECT * FROM users WHERE id = ? AND role = 'member'`).get(req.params.id);
+  const member = db.prepare(`SELECT * FROM users WHERE id = ? AND role = 'member' AND tenant_id = ?`)
+    .get(req.params.id, req.user.tenant_id);
   if (!member || (req.user.role === 'coach' && member.coach_id !== req.user.id)) {
     res.status(404).json({ error: 'member_not_found' });
     return null;
@@ -317,12 +368,12 @@ const memberListQuery = `
   FROM users u
   LEFT JOIN users c ON c.id = u.coach_id
   LEFT JOIN profiles p ON p.user_id = u.id
-  WHERE u.role = 'member'`;
+  WHERE u.role = 'member' AND u.tenant_id = ?`;
 
 app.get('/api/coach/members', requireRole('coach'), (req, res) => {
   const rows = req.user.role === 'coach'
-    ? db.prepare(memberListQuery + ' AND u.coach_id = ? ORDER BY u.name').all(req.user.id)
-    : db.prepare(memberListQuery + ' ORDER BY u.name').all();
+    ? db.prepare(memberListQuery + ' AND u.coach_id = ? ORDER BY u.name').all(req.user.tenant_id, req.user.id)
+    : db.prepare(memberListQuery + ' ORDER BY u.name').all(req.user.tenant_id);
   res.json({ members: rows });
 });
 
@@ -339,7 +390,7 @@ app.get('/api/coach/members/:id', requireRole('coach'), (req, res) => {
 app.post('/api/coach/members', requireRole('coach'), (req, res) => {
   const { name, email } = req.body || {};
   const coachId = req.user.role === 'coach' ? req.user.id : (req.body.coach_id || null);
-  const created = createUser(res, { role: 'member', name, email, coach_id: coachId });
+  const created = createUser(res, { role: 'member', name, email, coach_id: coachId, tenant_id: req.user.tenant_id });
   if (created) res.json(created);
 });
 
@@ -371,35 +422,42 @@ app.post('/api/coach/members/:id/reset-password', requireRole('coach'), (req, re
 app.get('/api/admin/overview', requireRole('admin'), (req, res) => {
   const count = (sql, ...args) => db.prepare(sql).get(...args).n;
   const weekAgo = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
+  const tid = req.user.tenant_id;
   res.json({
-    members: count(`SELECT COUNT(*) n FROM users WHERE role='member' AND active=1`),
-    coaches: count(`SELECT COUNT(*) n FROM users WHERE role='coach' AND active=1`),
-    checkins_week: count(`SELECT COUNT(*) n FROM checkins WHERE date >= ?`, weekAgo),
-    active_week: count(`SELECT COUNT(DISTINCT user_id) n FROM checkins WHERE date >= ?`, weekAgo),
-    unassigned: count(`SELECT COUNT(*) n FROM users WHERE role='member' AND active=1 AND coach_id IS NULL`),
+    members: count(`SELECT COUNT(*) n FROM users WHERE role='member' AND active=1 AND tenant_id=?`, tid),
+    coaches: count(`SELECT COUNT(*) n FROM users WHERE role='coach' AND active=1 AND tenant_id=?`, tid),
+    checkins_week: count(`SELECT COUNT(*) n FROM checkins c JOIN users u ON u.id=c.user_id
+                          WHERE c.date >= ? AND u.tenant_id=?`, weekAgo, tid),
+    active_week: count(`SELECT COUNT(DISTINCT c.user_id) n FROM checkins c JOIN users u ON u.id=c.user_id
+                        WHERE c.date >= ? AND u.tenant_id=?`, weekAgo, tid),
+    unassigned: count(`SELECT COUNT(*) n FROM users WHERE role='member' AND active=1 AND coach_id IS NULL AND tenant_id=?`, tid),
   });
 });
 
 app.get('/api/admin/users', requireRole('admin'), (req, res) => {
+  const tid = req.user.tenant_id;
   const coaches = db.prepare(`
     SELECT u.id, u.name, u.email, u.active, u.created_at,
       (SELECT COUNT(*) FROM users m WHERE m.coach_id = u.id AND m.role='member') AS member_count
-    FROM users u WHERE u.role = 'coach' ORDER BY u.name
-  `).all();
-  const members = db.prepare(memberListQuery + ' ORDER BY u.name').all();
-  const admins = db.prepare(`SELECT id, name, email, active, created_at FROM users WHERE role='admin' ORDER BY name`).all();
+    FROM users u WHERE u.role = 'coach' AND u.tenant_id = ? ORDER BY u.name
+  `).all(tid);
+  const members = db.prepare(memberListQuery + ' ORDER BY u.name').all(tid);
+  const admins = db.prepare(`SELECT id, name, email, active, created_at FROM users
+                             WHERE role='admin' AND tenant_id = ? ORDER BY name`).all(tid);
   res.json({ coaches, members, admins });
 });
 
 app.post('/api/admin/users', requireRole('admin'), (req, res) => {
   const { role, name, email, coach_id } = req.body || {};
   if (!['coach', 'member', 'admin'].includes(role)) return res.status(400).json({ error: 'invalid_role' });
-  const created = createUser(res, { role, name, email, coach_id: role === 'member' ? coach_id || null : null });
+  const created = createUser(res, { role, name, email,
+    coach_id: role === 'member' ? coach_id || null : null, tenant_id: req.user.tenant_id });
   if (created) res.json(created);
 });
 
 app.put('/api/admin/users/:id', requireRole('admin'), (req, res) => {
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
+  const user = db.prepare('SELECT * FROM users WHERE id = ? AND tenant_id = ?')
+    .get(req.params.id, req.user.tenant_id);
   if (!user) return res.status(404).json({ error: 'user_not_found' });
   const b = req.body || {};
   if (user.role === 'admin' && b.active === false && user.id === req.user.id) {
@@ -410,7 +468,7 @@ app.put('/api/admin/users/:id', requireRole('admin'), (req, res) => {
   const active = b.active !== undefined ? (b.active ? 1 : 0) : user.active;
   let coachId = user.coach_id;
   if (b.coach_id !== undefined && user.role === 'member') {
-    if (!validCoachId(b.coach_id)) return res.status(400).json({ error: 'invalid_coach' });
+    if (!validCoachId(b.coach_id, req.user.tenant_id)) return res.status(400).json({ error: 'invalid_coach' });
     coachId = b.coach_id || null;
   }
   try {
@@ -424,7 +482,8 @@ app.put('/api/admin/users/:id', requireRole('admin'), (req, res) => {
 });
 
 app.delete('/api/admin/users/:id', requireRole('admin'), (req, res) => {
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
+  const user = db.prepare('SELECT * FROM users WHERE id = ? AND tenant_id = ?')
+    .get(req.params.id, req.user.tenant_id);
   if (!user) return res.status(404).json({ error: 'user_not_found' });
   if (user.id === req.user.id) return res.status(400).json({ error: 'cannot_delete_self' });
   // Cascades verwijderen profiel, check-ins, notities en sessies;
@@ -434,7 +493,8 @@ app.delete('/api/admin/users/:id', requireRole('admin'), (req, res) => {
 });
 
 app.post('/api/admin/users/:id/reset-password', requireRole('admin'), (req, res) => {
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
+  const user = db.prepare('SELECT * FROM users WHERE id = ? AND tenant_id = ?')
+    .get(req.params.id, req.user.tenant_id);
   if (!user) return res.status(404).json({ error: 'user_not_found' });
   const password = tempPassword();
   db.prepare('UPDATE users SET password_hash = ?, must_change_password = 1 WHERE id = ?')
@@ -442,29 +502,153 @@ app.post('/api/admin/users/:id/reset-password', requireRole('admin'), (req, res)
   res.json({ password });
 });
 
+// ---------- Tenants (publiek) ----------
+
+app.get('/api/tenants', (req, res) => {
+  const tenants = db.prepare(`SELECT slug, name, logo_url, color_brand
+                              FROM tenants WHERE active = 1 ORDER BY name`).all();
+  res.json({ tenants });
+});
+
+// Let op: vóór /api/tenant/:slug, anders vangt de slug-route 'current' af.
+app.get('/api/tenant/current', (req, res) => {
+  const host = requestHost(req);
+  const t = host
+    ? db.prepare('SELECT * FROM tenants WHERE custom_domain = ? AND active = 1').get(host)
+    : null;
+  if (!t) return res.status(404).json({ error: 'tenant_not_found' });
+  res.json({ tenant: publicTenant(t) });
+});
+
+app.get('/api/tenant/:slug', (req, res) => {
+  const t = db.prepare('SELECT * FROM tenants WHERE slug = ? AND active = 1')
+    .get(String(req.params.slug || ''));
+  if (!t) return res.status(404).json({ error: 'tenant_not_found' });
+  res.json({ tenant: publicTenant(t) });
+});
+
+// ---------- Superadmin (platformbeheer) ----------
+
+const SLUG_RE = /^[a-z0-9-]{2,30}$/;
+const cleanColor = (v) => (/^#[0-9a-fA-F]{6}$/.test(String(v || '')) ? String(v) : null);
+const cleanLogo = (v) => {
+  const s = String(v || '').trim();
+  return (s.startsWith('https://') || s.startsWith('/')) ? s : null;
+};
+const cleanDomain = (v) => {
+  const s = String(v || '').trim().toLowerCase();
+  return /^[a-z0-9][a-z0-9.-]*\.[a-z]{2,}$/.test(s) ? s : null;
+};
+
+app.get('/api/super/tenants', requireSuper, (req, res) => {
+  const tenants = db.prepare(`
+    SELECT t.*,
+      (SELECT COUNT(*) FROM users WHERE tenant_id = t.id AND role='member') AS member_count,
+      (SELECT COUNT(*) FROM users WHERE tenant_id = t.id AND role='coach') AS coach_count,
+      (SELECT COUNT(*) FROM users WHERE tenant_id = t.id AND role='admin') AS admin_count
+    FROM tenants t ORDER BY t.name
+  `).all();
+  res.json({ tenants });
+});
+
+app.post('/api/super/tenants', requireSuper, (req, res) => {
+  const b = req.body || {};
+  const name = String(b.name || '').trim();
+  const slug = String(b.slug || '').trim().toLowerCase();
+  const adminName = String(b.admin_name || '').trim();
+  const adminEmail = String(b.admin_email || '').trim();
+  if (!SLUG_RE.test(slug) || slug === 'current') return res.status(400).json({ error: 'invalid_slug' });
+  if (!name || !adminName || !adminEmail.includes('@')) return res.status(400).json({ error: 'name_email_required' });
+  const password = tempPassword();
+  try {
+    const result = db.transaction(() => {
+      const info = db.prepare(`
+        INSERT INTO tenants (slug, name, custom_domain, logo_url, color_brand, color_brand_deep, color_accent, mail_from_name)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(slug, name, cleanDomain(b.custom_domain), cleanLogo(b.logo_url),
+             cleanColor(b.color_brand), cleanColor(b.color_brand_deep), cleanColor(b.color_accent),
+             String(b.mail_from_name || '').trim() || name);
+      const uinfo = db.prepare(`
+        INSERT INTO users (tenant_id, role, name, email, password_hash, must_change_password)
+        VALUES (?, 'admin', ?, ?, ?, 1)
+      `).run(info.lastInsertRowid, adminName, adminEmail, bcrypt.hashSync(password, 10));
+      return {
+        tenant: db.prepare('SELECT * FROM tenants WHERE id = ?').get(info.lastInsertRowid),
+        admin: publicUser(db.prepare('SELECT * FROM users WHERE id = ?').get(uinfo.lastInsertRowid)),
+      };
+    })();
+    res.json({ ...result, password });
+  } catch (e) {
+    res.status(400).json({ error: 'slug_in_use' });
+  }
+});
+
+app.put('/api/super/tenants/:id', requireSuper, (req, res) => {
+  const t = db.prepare('SELECT * FROM tenants WHERE id = ?').get(req.params.id);
+  if (!t) return res.status(404).json({ error: 'tenant_not_found' });
+  const b = req.body || {};
+  // Slug is de identiteit van een tenant (staat in links) en blijft vast.
+  const opt = (v, cur, clean) => (v === undefined ? cur : (String(v).trim() === '' ? null : clean(v)));
+  const name = b.name !== undefined ? (String(b.name).trim() || t.name) : t.name;
+  const active = b.active !== undefined ? (b.active ? 1 : 0) : t.active;
+  try {
+    db.prepare(`UPDATE tenants SET name = ?, custom_domain = ?, logo_url = ?,
+                color_brand = ?, color_brand_deep = ?, color_accent = ?, mail_from_name = ?, active = ?
+                WHERE id = ?`)
+      .run(name,
+           opt(b.custom_domain, t.custom_domain, cleanDomain),
+           opt(b.logo_url, t.logo_url, cleanLogo),
+           opt(b.color_brand, t.color_brand, cleanColor),
+           opt(b.color_brand_deep, t.color_brand_deep, cleanColor),
+           opt(b.color_accent, t.color_accent, cleanColor),
+           opt(b.mail_from_name, t.mail_from_name, (v) => String(v).trim()),
+           active, t.id);
+  } catch (e) {
+    return res.status(400).json({ error: 'slug_in_use' });
+  }
+  if (!active) {
+    // Gedeactiveerde tenant: alle gebruikers direct uitloggen.
+    db.prepare('DELETE FROM sessions WHERE user_id IN (SELECT id FROM users WHERE tenant_id = ?)').run(t.id);
+  }
+  res.json({ tenant: db.prepare('SELECT * FROM tenants WHERE id = ?').get(t.id) });
+});
+
+app.post('/api/super/tenants/:id/act-as', requireSuper, (req, res) => {
+  const t = db.prepare('SELECT * FROM tenants WHERE id = ? AND active = 1').get(req.params.id);
+  if (!t) return res.status(404).json({ error: 'tenant_not_found' });
+  setActingTenant(req, t.id);
+  res.json({ ok: true, tenant: publicTenant(t) });
+});
+
+app.post('/api/super/act-as/stop', requireSuper, (req, res) => {
+  setActingTenant(req, null);
+  res.json({ ok: true });
+});
+
 // ---------- Helpers ----------
 
-// Een "coach" van een deelnemer mag ook een beheerder zijn.
-const validCoachId = (id) => !id ||
-  !!db.prepare(`SELECT 1 FROM users WHERE id = ? AND active = 1 AND role IN ('coach','admin')`).get(id);
+// Een "coach" van een deelnemer mag ook een beheerder zijn — binnen dezelfde tenant.
+const validCoachId = (id, tenantId) => !id ||
+  !!db.prepare(`SELECT 1 FROM users WHERE id = ? AND active = 1 AND role IN ('coach','admin') AND tenant_id = ?`)
+    .get(id, tenantId);
 
-function createUser(res, { role, name, email, coach_id }) {
+function createUser(res, { role, name, email, coach_id, tenant_id }) {
   name = String(name || '').trim();
   email = String(email || '').trim();
   if (!name || !email || !email.includes('@')) {
     res.status(400).json({ error: 'name_email_required' });
     return null;
   }
-  if (!validCoachId(coach_id)) {
+  if (!validCoachId(coach_id, tenant_id)) {
     res.status(400).json({ error: 'invalid_coach' });
     return null;
   }
   const password = tempPassword();
   try {
     const info = db.prepare(`
-      INSERT INTO users (role, name, email, password_hash, coach_id, must_change_password)
-      VALUES (?, ?, ?, ?, ?, 1)
-    `).run(role, name, email, bcrypt.hashSync(password, 10), coach_id || null);
+      INSERT INTO users (tenant_id, role, name, email, password_hash, coach_id, must_change_password)
+      VALUES (?, ?, ?, ?, ?, ?, 1)
+    `).run(tenant_id, role, name, email, bcrypt.hashSync(password, 10), coach_id || null);
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
     return { user: publicUser(user), password };
   } catch (e) {

@@ -35,10 +35,38 @@ function currentUser(req) {
   const token = getToken(req);
   if (!token) return null;
   const row = db.prepare(`
-    SELECT u.* FROM sessions s JOIN users u ON u.id = s.user_id
+    SELECT u.*, s.acting_tenant_id FROM sessions s JOIN users u ON u.id = s.user_id
     WHERE s.token_hash = ? AND s.expires_at > ? AND u.active = 1
   `).get(hash(token), Date.now());
-  return row || null;
+  if (!row) return null;
+  // Superadmin die "als beheerder" in een tenant stapt gedraagt zich als
+  // gewone tenant-admin: alle bestaande endpoints en tenant-scoping werken
+  // dan vanzelf, en kunnen nooit buiten die ene tenant komen.
+  if (row.role === 'superadmin' && row.acting_tenant_id) {
+    const t = db.prepare('SELECT id FROM tenants WHERE id = ? AND active = 1').get(row.acting_tenant_id);
+    if (t) return { ...row, role: 'admin', real_role: 'superadmin', tenant_id: row.acting_tenant_id };
+  }
+  return { ...row, real_role: row.role };
+}
+
+// Alleen de platformeigenaar — bewust op real_role (niet via requireRole:
+// de admin-bypass daar zou tenant-admins doorlaten) zodat het ook in
+// act-as-modus blijft werken.
+function requireSuper(req, res, next) {
+  const user = currentUser(req);
+  if (!user) return res.status(401).json({ error: 'not_logged_in' });
+  if (user.real_role !== 'superadmin') return res.status(403).json({ error: 'forbidden' });
+  req.user = user;
+  next();
+}
+
+// Zet (of wist, met null) de tenant waarin de superadmin als beheerder werkt.
+function setActingTenant(req, tenantId) {
+  const token = getToken(req);
+  if (token) {
+    db.prepare('UPDATE sessions SET acting_tenant_id = ? WHERE token_hash = ?')
+      .run(tenantId, hash(token));
+  }
 }
 
 // Middleware: vereist ingelogde gebruiker met een van de gegeven rollen.
@@ -59,4 +87,4 @@ function cleanupExpiredSessions() {
   db.prepare('DELETE FROM sessions WHERE expires_at <= ?').run(Date.now());
 }
 
-module.exports = { createSession, destroySession, currentUser, requireRole, cleanupExpiredSessions };
+module.exports = { createSession, destroySession, currentUser, requireRole, requireSuper, setActingTenant, cleanupExpiredSessions };
