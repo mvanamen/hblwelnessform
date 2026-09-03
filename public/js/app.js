@@ -3,7 +3,7 @@
   'use strict';
 
   const $app = document.getElementById('app');
-  const state = { user: null, profile: null };
+  const state = { user: null, profile: null, tenant: null, acting: false };
 
   // ============================================================
   // i18n
@@ -162,8 +162,8 @@
       'inv.coach.btn': 'Uitnodigingslink',
       'inv.coach.title': 'Uitnodigingslink voor nieuwe coach',
       'inv.coach.sub': 'Deel deze link met de nieuwe coach. Let op: de link is eenmalig geldig \u2014 zodra er een account mee is aangemaakt werkt hij niet meer. Voor iedere nieuwe coach genereer je een nieuwe link.',
-      'wa.member': 'Hoi! Maak via deze link je eigen account aan op HerbaForms, dan gaan we samen met jouw doelen aan de slag \ud83c\udf3f ',
-      'wa.coach': 'Hoi! Via deze link maak je jouw coach-account aan op HerbaForms. De link is eenmalig geldig, dus alleen voor jou \ud83d\ude0a ',
+      'wa.member': 'Hoi! Maak via deze link je eigen account aan op {app}, dan gaan we samen met jouw doelen aan de slag \ud83c\udf3f ',
+      'wa.coach': 'Hoi! Via deze link maak je jouw coach-account aan op {app}. De link is eenmalig geldig, dus alleen voor jou \ud83d\ude0a ',
       'reg.invited.coach': 'Je bent door {name} uitgenodigd als coach.',
       'inv.regen.title': 'Nieuwe link genereren?',
       'inv.regen.text': 'De oude link werkt daarna niet meer. Al aangemaakte accounts blijven gewoon bestaan.',
@@ -171,7 +171,7 @@
       'reg.title': 'Account aanmaken',
       'reg.invited': 'Je bent uitgenodigd door {name}.',
       'reg.submit': 'Account aanmaken',
-      'reg.welcome': 'Welkom bij HerbaForms 🎉',
+      'reg.welcome': 'Welkom bij {app} 🎉',
       'reg.invalid': 'Deze uitnodigingslink is niet (meer) geldig. Vraag je coach om een nieuwe link.',
       'reg.haslogin': 'Al een account?', 'reg.tologin': 'Inloggen',
       'err.invalid_invite': 'Deze uitnodigingslink is ongeldig of verlopen',
@@ -199,6 +199,34 @@
       'err.email_in_use': 'E-mailadres is al in gebruik',
       'err.name_email_required': 'Naam en geldig e-mailadres zijn verplicht',
       'err.generic': 'Er ging iets mis',
+      'portal.sub': 'Kies je aanbieder om in te loggen.',
+      'portal.empty': 'Er zijn nog geen aanbieders actief.',
+      'portal.admin': 'Platformbeheer',
+      'login.other': 'Andere aanbieder kiezen',
+      'nav.tenants': 'Aanbieders',
+      'role.superadmin': 'Platformbeheerder',
+      'su.title': 'Aanbieders',
+      'su.sub': '{n} aanbieder(s) op het platform.',
+      'su.tenant': 'Aanbieder',
+      'su.new': '+ Nieuwe aanbieder',
+      'su.newtitle': 'Nieuwe aanbieder',
+      'su.open': 'Open als beheerder',
+      'su.empty': 'Nog geen aanbieders.',
+      'su.slug': 'Slug (voor links)',
+      'su.slug.hint': 'Kleine letters, cijfers en streepjes (2–30 tekens). Kan later niet gewijzigd worden.',
+      'su.domain': 'Eigen domein (optioneel)',
+      'su.domain.hint': 'bijv. hblwellnessform.com — bezoekers van dit domein komen direct bij deze aanbieder uit.',
+      'su.logo': 'Logo-URL (optioneel)',
+      'su.logo.hint': 'Volledige https://-link of pad zoals /img/logo.svg.',
+      'su.colors': 'Merkkleuren',
+      'su.color.brand': 'Hoofdkleur', 'su.color.deep': 'Donker', 'su.color.accent': 'Accent',
+      'su.mailfrom': 'Afzendernaam voor e-mails',
+      'su.adminsection': 'Eerste beheerder',
+      'su.acting': 'Je beheert nu: {name}',
+      'su.acting.stop': 'Terug naar platformbeheer',
+      'err.tenant_not_found': 'Aanbieder niet gevonden of niet actief',
+      'err.invalid_slug': 'Ongeldige slug: kleine letters, cijfers en streepjes (2–30 tekens)',
+      'err.slug_in_use': 'Deze slug of dit domein is al in gebruik',
     },
     en: {
       'tagline': 'Your progress, together with your coach.',
@@ -352,8 +380,8 @@
       'inv.coach.btn': 'Invite link',
       'inv.coach.title': 'Invite link for a new coach',
       'inv.coach.sub': 'Share this link with the new coach. Note: the link is valid once \u2014 as soon as an account has been created with it, it stops working. Generate a new link for every new coach.',
-      'wa.member': "Hi! Create your own HerbaForms account via this link, so we can start working on your goals together \ud83c\udf3f ",
-      'wa.coach': "Hi! Use this link to create your coach account on HerbaForms. The link is valid once, so it's just for you \ud83d\ude0a ",
+      'wa.member': "Hi! Create your own {app} account via this link, so we can start working on your goals together \ud83c\udf3f ",
+      'wa.coach': "Hi! Use this link to create your coach account on {app}. The link is valid once, so it's just for you \ud83d\ude0a ",
       'reg.invited.coach': 'You have been invited by {name} as a coach.',
       'inv.regen.title': 'Generate a new link?',
       'inv.regen.text': 'The old link will stop working. Accounts that were already created remain untouched.',
@@ -361,7 +389,7 @@
       'reg.title': 'Create account',
       'reg.invited': 'You have been invited by {name}.',
       'reg.submit': 'Create account',
-      'reg.welcome': 'Welcome to HerbaForms 🎉',
+      'reg.welcome': 'Welcome to {app} 🎉',
       'reg.invalid': 'This invite link is no longer valid. Ask your coach for a new link.',
       'reg.haslogin': 'Already have an account?', 'reg.tologin': 'Sign in',
       'err.invalid_invite': 'This invite link is invalid or expired',
@@ -389,6 +417,34 @@
       'err.email_in_use': 'Email address is already in use',
       'err.name_email_required': 'Name and a valid email address are required',
       'err.generic': 'Something went wrong',
+      'portal.sub': 'Choose your provider to sign in.',
+      'portal.empty': 'No providers are active yet.',
+      'portal.admin': 'Platform management',
+      'login.other': 'Choose a different provider',
+      'nav.tenants': 'Providers',
+      'role.superadmin': 'Platform administrator',
+      'su.title': 'Providers',
+      'su.sub': '{n} provider(s) on the platform.',
+      'su.tenant': 'Provider',
+      'su.new': '+ New provider',
+      'su.newtitle': 'New provider',
+      'su.open': 'Open as administrator',
+      'su.empty': 'No providers yet.',
+      'su.slug': 'Slug (for links)',
+      'su.slug.hint': 'Lowercase letters, digits and dashes (2–30 characters). Cannot be changed later.',
+      'su.domain': 'Custom domain (optional)',
+      'su.domain.hint': 'e.g. hblwellnessform.com — visitors of this domain go straight to this provider.',
+      'su.logo': 'Logo URL (optional)',
+      'su.logo.hint': 'Full https:// link or a path like /img/logo.svg.',
+      'su.colors': 'Brand colours',
+      'su.color.brand': 'Primary', 'su.color.deep': 'Dark', 'su.color.accent': 'Accent',
+      'su.mailfrom': 'Email sender name',
+      'su.adminsection': 'First administrator',
+      'su.acting': 'You are managing: {name}',
+      'su.acting.stop': 'Back to platform management',
+      'err.tenant_not_found': 'Provider not found or inactive',
+      'err.invalid_slug': 'Invalid slug: lowercase letters, digits and dashes (2–30 characters)',
+      'err.slug_in_use': 'This slug or domain is already in use',
     },
   };
 
@@ -431,6 +487,33 @@
     toast(next === 'dark' ? t('theme.dark') : next === 'light' ? t('theme.light') : t('theme.auto'));
   }
   applyTheme();
+
+  // ---------- tenant-branding ----------
+  // Inline CSS-vars op :root winnen van zowel het lichte als het donkere
+  // themablok; leeg = terug naar platform-default.
+  function applyTenantBranding(tn) {
+    const r = document.documentElement.style;
+    [['--brand', tn?.color_brand], ['--brand-deep', tn?.color_brand_deep], ['--accent', tn?.color_accent]]
+      .forEach(([v, val]) => (val ? r.setProperty(v, val) : r.removeProperty(v)));
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', tn?.color_brand || '#166534');
+  }
+  function setTenant(tn, remember = true) {
+    state.tenant = tn || null;
+    if (tn && remember) localStorage.setItem('hf-tenant', tn.slug);
+    applyTenantBranding(tn);
+  }
+  function clearTenant() {
+    state.tenant = null;
+    localStorage.removeItem('hf-tenant');
+    applyTenantBranding(null);
+  }
+  async function selectTenant(slug) {
+    const { tenant } = await api('/tenant/' + encodeURIComponent(slug));
+    setTenant(tenant);
+    return tenant;
+  }
+  const appName = () => state.tenant?.name || 'HerbaForms';
+  const safeLogo = (u) => (u && (/^https:\/\//.test(u) || String(u).startsWith('/'))) ? u : null;
 
   // ---------- helpers ----------
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) =>
@@ -546,11 +629,32 @@
     // element (display:none) rendert anders niet in andere instanties
     get leaf() { const gid = 'hflg' + (++leafN); return `<svg width="19" height="22" viewBox="0 0 120 140"><defs><linearGradient id="${gid}" x1="30" y1="0" x2="60" y2="140" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#2f9bd6"/><stop offset="0.26" stop-color="#1d95a8"/><stop offset="0.48" stop-color="#2f9e58"/><stop offset="0.7" stop-color="#7fae2e"/><stop offset="0.85" stop-color="#e0b224"/><stop offset="1" stop-color="#e2703a"/></linearGradient></defs><g fill="none" stroke="url(#${gid})" stroke-linecap="round"><path d="M53 28 A11.5 11.5 0 1 1 68 25" stroke-width="6"/><path d="M61 36 C74 40 92 34 108 22" stroke-width="6"/><path d="M55 36 C46 28 37 19 29 9" stroke-width="5.5"/><path d="M59 36 C56 47 52 57 48 67" stroke-width="8"/><path d="M48 67 C57 65 66 69 69 77 C72 86 68 97 61 105" stroke-width="8"/><path d="M69 79 C76 90 79 102 77 114" stroke-width="6.5"/><path d="M48 67 C44 80 38 91 31 99 C25 107 17 118 9 129" stroke-width="8"/></g></svg>`; },
   };
-  const logoHTML = () => `<div class="logo"><div class="logo-mark">${I.leaf}</div><div class="logo-name">Herba<span>Forms</span></div></div>`;
+  // Merkteken: tenant-logo, anders initialen in de merkkleur, anders het blad.
+  const brandMarkHTML = () => {
+    const tn = state.tenant;
+    if (!tn) return `<div class="logo-mark">${I.leaf}</div>`;
+    const logo = safeLogo(tn.logo_url);
+    return logo
+      ? `<div class="logo-mark"><img src="${esc(logo)}" alt=""></div>`
+      : `<div class="logo-mark tenant-mark">${esc(initials(tn.name))}</div>`;
+  };
+  const brandNameHTML = () => state.tenant ? esc(state.tenant.name) : 'Herba<span>Forms</span>';
+  const logoHTML = () => `<div class="logo">${brandMarkHTML()}<div class="logo-name">${brandNameHTML()}</div></div>`;
+  // Kop van de login-familie: titel default = merknaam.
+  const loginBrandHTML = (title, sub) => `
+    <div class="login-brand">
+      ${brandMarkHTML()}
+      <h1>${title !== undefined ? title : (state.tenant ? esc(state.tenant.name) : 'Herba<span style="color:var(--brand)">Forms</span>')}</h1>
+      ${sub ? `<p>${sub}</p>` : ''}
+    </div>`;
 
   // ---------- navigatie per rol ----------
   function navItems() {
     const r = state.user.role;
+    if (r === 'superadmin') return [
+      { href: '#/', label: t('nav.tenants'), icon: I.users },
+      { href: '#/instellingen', label: t('nav.settings'), icon: I.gear },
+    ];
     if (r === 'member') return [
       { href: '#/', label: t('nav.overview'), icon: I.home },
       { href: '#/checkin', label: t('nav.checkin'), icon: I.plus },
@@ -574,6 +678,12 @@
     const cur = location.hash || '#/';
     const link = (n) =>
       `<a href="${n.href}" class="${cur === n.href ? 'active' : ''}">${n.icon}<span>${esc(n.label)}</span></a>`;
+    // Superadmin in act-as-modus krijgt een banner met terugknop.
+    const actingBar = state.acting && state.tenant ? `
+      <div class="acting-bar">
+        <span>${t('su.acting', { name: esc(state.tenant.name) })}</span>
+        <button data-stop-acting>${t('su.acting.stop')}</button>
+      </div>` : '';
     $app.innerHTML = `
       <div class="shell">
         <aside class="sidebar">
@@ -592,6 +702,7 @@
           </div>
         </aside>
         <div>
+          ${actingBar}
           <header class="topbar">
             ${logoHTML()}
             <div class="topbar-actions">
@@ -607,12 +718,36 @@
     $app.querySelectorAll('[data-logout]').forEach((b) => b.onclick = logout);
     $app.querySelectorAll('[data-theme-toggle]').forEach((b) => b.onclick = cycleTheme);
     $app.querySelectorAll('[data-lang-toggle]').forEach((b) => b.onclick = () => setLang(LANG === 'nl' ? 'en' : 'nl'));
+    const stopBtn = $app.querySelector('[data-stop-acting]');
+    if (stopBtn) stopBtn.onclick = stopActing;
     return $app.querySelector('.main-inner');
   }
 
+  // Sessie-state opnieuw laden (na act-as of stoppen daarvan).
+  async function refreshMe() {
+    const d = await api('/me');
+    state.user = d.user; state.profile = d.profile; state.acting = !!d.acting;
+    if (d.tenant) setTenant(d.tenant, !state.acting);
+    else { state.tenant = null; applyTenantBranding(null); }
+  }
+
+  async function stopActing() {
+    try {
+      await api('/super/act-as/stop', { method: 'POST' });
+      await refreshMe();
+      if (location.hash && location.hash !== '#/') location.hash = '#/';
+      else route();
+    } catch (err) { toast(err.message, true); }
+  }
+
   async function logout() {
+    // hf-tenant blijft bewaard: na uitloggen terug naar de eigen tenant-login.
     await api('/logout', { method: 'POST' }).catch(() => {});
-    state.user = null; state.profile = null;
+    state.user = null; state.profile = null; state.acting = false;
+    if (!state.tenant) {
+      const saved = localStorage.getItem('hf-tenant');
+      if (saved) await selectTenant(saved).catch(() => clearTenant());
+    }
     location.hash = '#/login';
     route();
   }
@@ -687,16 +822,17 @@
   // Views
   // ============================================================
 
-  function loginView(err = '') {
+  // superMode: inloggen als platformbeheerder, zonder tenant-context.
+  function loginView(err = '', superMode = false) {
+    const otherLink = !superMode && state.tenant
+      ? `<p style="text-align:center;font-size:13px"><a href="#" data-other style="color:var(--ink-3)">${t('login.other')}</a></p>` : '';
     $app.innerHTML = `
       <div class="login-wrap">
         <div style="display:flex;flex-direction:column;gap:14px;width:min(410px,100%)">
         <div class="login-card">
-          <div class="login-brand">
-            <div class="logo-mark">${I.leaf}</div>
-            <h1>Herba<span style="color:var(--brand)">Forms</span></h1>
-            <p>${t('tagline')}</p>
-          </div>
+          ${superMode
+            ? loginBrandHTML(undefined, t('portal.admin'))
+            : loginBrandHTML(undefined, t('tagline'))}
           ${err ? `<div class="form-error">${esc(err)}</div>` : ''}
           <form id="login-form" style="display:flex;flex-direction:column;gap:14px">
             <div class="field"><label>${t('login.email')}</label>
@@ -706,20 +842,27 @@
             <button class="btn big" type="submit">${t('login.submit')}</button>
           </form>
           <p style="text-align:center;font-size:13.5px"><a href="#/wachtwoord-vergeten">${t('fp.link')}</a></p>
+          ${otherLink}
         </div>
         ${langToggleHTML()}
         </div>
       </div>`;
     bindLangToggle($app);
+    const other = $app.querySelector('[data-other]');
+    if (other) other.onclick = (e) => { e.preventDefault(); clearTenant(); route(); };
     document.getElementById('login-form').onsubmit = async (e) => {
       e.preventDefault();
       const f = new FormData(e.target);
+      const body = { email: f.get('email'), password: String(f.get('password')) };
+      if (!superMode && state.tenant) body.tenant = state.tenant.slug;
       try {
-        const { user } = await api('/login', { method: 'POST', body: { email: f.get('email'), password: String(f.get('password')) } });
-        state.user = user;
+        const d = await api('/login', { method: 'POST', body });
+        state.user = d.user; state.acting = false;
+        if (d.tenant) setTenant(d.tenant);
+        else if (d.user.role === 'superadmin') { state.tenant = null; applyTenantBranding(null); }
         if (location.hash && location.hash !== '#/') location.hash = '#/';
         else route();
-      } catch (err) { loginView(err.message); }
+      } catch (err) { loginView(err.message, superMode); }
     };
   }
 
@@ -728,11 +871,7 @@
       <div class="login-wrap">
         <div style="display:flex;flex-direction:column;gap:14px;width:min(410px,100%)">
         <div class="login-card">
-          <div class="login-brand">
-            <div class="logo-mark">${I.leaf}</div>
-            <h1>${t('force.title')}</h1>
-            <p>${t('force.intro', { name: esc(state.user.name) })}</p>
-          </div>
+          ${loginBrandHTML(t('force.title'), t('force.intro', { name: esc(state.user.name) }))}
           <div id="pw-err"></div>
           <form id="pw-form" style="display:flex;flex-direction:column;gap:14px">
             <div class="field"><label>${t('force.current')}</label>
@@ -773,11 +912,7 @@
       <div class="login-wrap">
         <div style="display:flex;flex-direction:column;gap:14px;width:min(410px,100%)">
         <div class="login-card">
-          <div class="login-brand">
-            <div class="logo-mark">${I.leaf}</div>
-            <h1>${t('fp.title')}</h1>
-            <p>${t('fp.sub')}</p>
-          </div>
+          ${loginBrandHTML(t('fp.title'), t('fp.sub'))}
           ${sent ? `<div class="password-reveal" style="text-align:left"><p style="margin:0;font-size:13.5px">${t('fp.sent')}</p></div>` : `
           <form id="fp-form" style="display:flex;flex-direction:column;gap:14px">
             <div class="field"><label>${t('login.email')}</label>
@@ -794,20 +929,26 @@
     if (form) form.onsubmit = async (e) => {
       e.preventDefault();
       const f = new FormData(form);
-      await api('/forgot', { method: 'POST', body: { email: f.get('email'), lang: LANG } }).catch(() => {});
+      // Tenant meesturen: hetzelfde e-mailadres kan bij meerdere aanbieders bestaan.
+      await api('/forgot', { method: 'POST', body: {
+        email: f.get('email'), lang: LANG, tenant: state.tenant?.slug,
+      } }).catch(() => {});
       forgotView(true);
     };
   }
 
   async function resetView(token) {
     $app.innerHTML = `<div class="login-wrap"><div class="login-card"><div class="skeleton">${t('loading')}</div></div></div>`;
-    try { await api('/reset/' + token); }
+    try {
+      const d = await api('/reset/' + token);
+      // De resetlink draagt zijn eigen tenant-context (branding + login-context).
+      if (d.tenant) setTenant(d.tenant);
+    }
     catch {
       $app.innerHTML = `
         <div class="login-wrap">
           <div class="login-card">
-            <div class="login-brand"><div class="logo-mark">${I.leaf}</div>
-              <h1>Herba<span style="color:var(--brand)">Forms</span></h1></div>
+            ${loginBrandHTML()}
             <div class="form-error">${t('rs.invalid')}</div>
             <a class="btn ghost" href="#/wachtwoord-vergeten" style="text-align:center">${t('fp.title')}</a>
           </div>
@@ -819,11 +960,7 @@
         <div class="login-wrap">
           <div style="display:flex;flex-direction:column;gap:14px;width:min(410px,100%)">
           <div class="login-card">
-            <div class="login-brand">
-              <div class="logo-mark">${I.leaf}</div>
-              <h1>${t('rs.title')}</h1>
-              <p>${t('rs.sub')}</p>
-            </div>
+            ${loginBrandHTML(t('rs.title'), t('rs.sub'))}
             ${err ? `<div class="form-error">${esc(err)}</div>` : ''}
             <form id="rs-form" style="display:flex;flex-direction:column;gap:14px">
               <div class="field"><label>${t('pw.next')}</label>
@@ -852,15 +989,17 @@
   async function registerView(token) {
     $app.innerHTML = `<div class="login-wrap"><div class="login-card"><div class="skeleton">${t('loading')}</div></div></div>`;
     let coach, type;
-    try { ({ coach, type } = await api('/invite/' + token)); }
+    try {
+      const d = await api('/invite/' + token);
+      ({ coach, type } = d);
+      // De uitnodiging draagt zijn eigen tenant-context mee.
+      if (d.tenant) setTenant(d.tenant);
+    }
     catch {
       $app.innerHTML = `
         <div class="login-wrap">
           <div class="login-card">
-            <div class="login-brand">
-              <div class="logo-mark">${I.leaf}</div>
-              <h1>Herba<span style="color:var(--brand)">Forms</span></h1>
-            </div>
+            ${loginBrandHTML()}
             <div class="form-error">${t('reg.invalid')}</div>
             <a class="btn ghost" href="#/login" style="text-align:center">${t('reg.tologin')}</a>
           </div>
@@ -872,11 +1011,7 @@
         <div class="login-wrap">
           <div style="display:flex;flex-direction:column;gap:14px;width:min(410px,100%)">
           <div class="login-card">
-            <div class="login-brand">
-              <div class="logo-mark">${I.leaf}</div>
-              <h1>${t('reg.title')}</h1>
-              <p>${t(type === 'coach' ? 'reg.invited.coach' : 'reg.invited', { name: `<b>${esc(coach)}</b>` })}</p>
-            </div>
+            ${loginBrandHTML(t('reg.title'), t(type === 'coach' ? 'reg.invited.coach' : 'reg.invited', { name: `<b>${esc(coach)}</b>` }))}
             ${err ? `<div class="form-error">${esc(err)}</div>` : ''}
             <form id="reg-form" style="display:flex;flex-direction:column;gap:14px">
               <div class="field"><label>${t('modal.name')}</label>
@@ -902,8 +1037,8 @@
           const { user } = await api('/register', { method: 'POST', body: {
             token, name: f.get('name'), email: f.get('email'), password: String(f.get('password')), lang: LANG,
           }});
-          state.user = user;
-          toast(t('reg.welcome'));
+          state.user = user; state.acting = false;
+          toast(t('reg.welcome', { app: appName() }));
           location.hash = '#/';
         } catch (err) { render(err.message); }
       };
@@ -947,7 +1082,7 @@
   function bindWaShare(m, link, msgKey) {
     let msgLang = LANG;
     const update = () => {
-      m.querySelector('[data-wa]').href = 'https://wa.me/?text=' + encodeURIComponent(tIn(msgLang, msgKey) + link());
+      m.querySelector('[data-wa]').href = 'https://wa.me/?text=' + encodeURIComponent(tIn(msgLang, msgKey, { app: appName() }) + link());
       m.querySelectorAll('[data-ml]').forEach((b) => b.classList.toggle('on', b.dataset.ml === msgLang));
     };
     m.querySelectorAll('[data-ml]').forEach((b) => b.onclick = () => { msgLang = b.dataset.ml; update(); });
@@ -1755,6 +1890,159 @@
     root.querySelector('[data-th]').onclick = cycleTheme;
   }
 
+  // ---------- Portal (aanbieder kiezen) ----------
+
+  async function portalView() {
+    $app.innerHTML = `<div class="login-wrap"><div class="login-card"><div class="skeleton">${t('loading')}</div></div></div>`;
+    let tenants = [];
+    try { ({ tenants } = await api('/tenants')); } catch {}
+    $app.innerHTML = `
+      <div class="login-wrap">
+        <div style="display:flex;flex-direction:column;gap:14px;width:min(440px,100%)">
+        <div class="login-card">
+          <div class="login-brand">
+            <div class="logo-mark">${I.leaf}</div>
+            <h1>Herba<span style="color:var(--brand)">Forms</span></h1>
+            <p>${t('portal.sub')}</p>
+          </div>
+          ${tenants.length ? `<div class="list">${tenants.map((tn) => {
+            const logo = safeLogo(tn.logo_url);
+            return `
+            <a href="#" class="list-item portal-item" data-slug="${esc(tn.slug)}">
+              <div class="person-row">
+                ${logo ? `<img class="portal-logo" src="${esc(logo)}" alt="">`
+                       : `<div class="avatar">${esc(initials(tn.name))}</div>`}
+                <div class="who"><b>${esc(tn.name)}</b></div>
+              </div>
+              <span aria-hidden="true">→</span>
+            </a>`;
+          }).join('')}</div>`
+          : `<div class="empty"><p>${t('portal.empty')}</p></div>`}
+        </div>
+        ${langToggleHTML()}
+        <p style="text-align:center;font-size:13px"><a href="#/super/login" style="color:var(--ink-3)">${t('portal.admin')}</a></p>
+        </div>
+      </div>`;
+    bindLangToggle($app);
+    $app.querySelectorAll('[data-slug]').forEach((a) => a.onclick = async (e) => {
+      e.preventDefault();
+      try {
+        await selectTenant(a.dataset.slug);
+        if (location.hash === '#/login') route();
+        else location.hash = '#/login';
+      } catch (err) { toast(err.message, true); }
+    });
+  }
+
+  // ---------- Superadmin (platformbeheer) ----------
+
+  async function superHome() {
+    const root = shell(`<div class="skeleton">${t('loading')}</div>`);
+    const { tenants } = await api('/super/tenants');
+    root.innerHTML = `
+      <div class="page-head"><div><h1>${t('su.title')}</h1>
+        <p class="sub">${t('su.sub', { n: tenants.length })}</p></div>
+        <button class="btn" data-new>${t('su.new')}</button></div>
+      <div class="card">
+        ${tenants.length ? `<div class="table-wrap"><table class="table">
+          <thead><tr><th>${t('su.tenant')}</th><th class="num">${t('th.members')}</th><th class="num">${t('ad.coaches.title')}</th><th>${t('th.status')}</th><th></th></tr></thead>
+          <tbody>${tenants.map((tn) => `
+            <tr>
+              <td><div class="person-row"><div class="avatar">${esc(initials(tn.name))}</div>
+                <div class="who"><b>${esc(tn.name)}</b><small>/${esc(tn.slug)}${tn.custom_domain ? ' · ' + esc(tn.custom_domain) : ''}</small></div></div></td>
+              <td class="num">${tn.member_count}</td>
+              <td class="num">${tn.coach_count}</td>
+              <td>${tn.active ? `<span class="badge good">${t('badge.active')}</span>` : `<span class="badge bad">${t('badge.inactive')}</span>`}</td>
+              <td style="text-align:right">
+                ${tn.active ? `<button class="btn small" data-act="${tn.id}">${t('su.open')}</button>` : ''}
+                <button class="btn ghost small" data-edit="${tn.id}">${t('btn.edit')}</button>
+              </td>
+            </tr>`).join('')}</tbody></table></div>`
+        : `<div class="empty"><p>${t('su.empty')}</p></div>`}
+      </div>`;
+    root.querySelector('[data-new]').onclick = () => tenantModal(null, superHome);
+    root.querySelectorAll('[data-act]').forEach((b) => b.onclick = async () => {
+      try {
+        await api('/super/tenants/' + b.dataset.act + '/act-as', { method: 'POST' });
+        await refreshMe();
+        if (location.hash && location.hash !== '#/') location.hash = '#/';
+        else route();
+      } catch (err) { toast(err.message, true); }
+    });
+    root.querySelectorAll('[data-edit]').forEach((b) => b.onclick = () => {
+      tenantModal(tenants.find((x) => x.id == b.dataset.edit), superHome);
+    });
+  }
+
+  function tenantModal(tn, onDone) {
+    const isNew = !tn;
+    const colorField = (name, label, val) => `
+      <div class="field" style="flex:1;min-width:96px"><label>${label}</label>
+        <input class="input" type="color" name="${name}" value="${esc(val || '#166534')}" style="padding:4px;height:42px"></div>`;
+    const m = modal(`
+      <h3>${isNew ? t('su.newtitle') : t('modal.edit.title', { name: esc(tn.name) })}</h3>
+      <form data-f style="display:flex;flex-direction:column;gap:14px">
+        <div class="field"><label>${t('modal.name')}</label>
+          <input class="input" name="name" required value="${esc(tn?.name || '')}"></div>
+        ${isNew ? `
+        <div class="field"><label>${t('su.slug')}</label>
+          <input class="input" name="slug" required pattern="[a-z0-9-]{2,30}">
+          <span class="hint">${t('su.slug.hint')}</span></div>` : ''}
+        <div class="field"><label>${t('su.domain')}</label>
+          <input class="input" name="custom_domain" value="${esc(tn?.custom_domain || '')}">
+          <span class="hint">${t('su.domain.hint')}</span></div>
+        <div class="field"><label>${t('su.logo')}</label>
+          <input class="input" name="logo_url" value="${esc(tn?.logo_url || '')}">
+          <span class="hint">${t('su.logo.hint')}</span></div>
+        <div class="field"><label>${t('su.colors')}</label>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            ${colorField('color_brand', t('su.color.brand'), tn?.color_brand)}
+            ${colorField('color_brand_deep', t('su.color.deep'), tn?.color_brand_deep || tn?.color_brand)}
+            ${colorField('color_accent', t('su.color.accent'), tn?.color_accent || '#65a30d')}
+          </div></div>
+        <div class="field"><label>${t('su.mailfrom')}</label>
+          <input class="input" name="mail_from_name" value="${esc(tn?.mail_from_name || '')}"></div>
+        ${isNew ? `
+        <div class="field"><label>${t('su.adminsection')}</label></div>
+        <div class="field"><label>${t('modal.name')}</label>
+          <input class="input" name="admin_name" required placeholder="${t('modal.name.ph')}"></div>
+        <div class="field"><label>${t('login.email')}</label>
+          <input class="input" name="admin_email" type="email" required></div>` : `
+        <div class="field"><label>${t('modal.status')}</label>
+          <select class="input" name="active">
+            <option value="1"${tn.active ? ' selected' : ''}>${t('modal.active')}</option>
+            <option value="0"${!tn.active ? ' selected' : ''}>${t('modal.inactive')}</option>
+          </select></div>`}
+        <div class="modal-actions">
+          <button class="btn ghost" type="button" data-x>${t('btn.cancel')}</button>
+          <button class="btn" type="submit">${isNew ? t('btn.create') : t('btn.save')}</button>
+        </div>
+      </form>`);
+    m.querySelector('[data-x]').onclick = closeModal;
+    m.querySelector('[data-f]').onsubmit = async (e) => {
+      e.preventDefault();
+      const f = new FormData(e.target);
+      const body = {
+        name: f.get('name'), custom_domain: f.get('custom_domain'), logo_url: f.get('logo_url'),
+        color_brand: f.get('color_brand'), color_brand_deep: f.get('color_brand_deep'),
+        color_accent: f.get('color_accent'), mail_from_name: f.get('mail_from_name'),
+      };
+      try {
+        if (isNew) {
+          const res = await api('/super/tenants', { method: 'POST', body: {
+            ...body, slug: f.get('slug'), admin_name: f.get('admin_name'), admin_email: f.get('admin_email'),
+          } });
+          tempPasswordModal({ user: res.admin, password: res.password }, onDone);
+        } else {
+          await api('/super/tenants/' + tn.id, { method: 'PUT', body: { ...body, active: f.get('active') === '1' } });
+          toast(t('toast.saved'));
+          closeModal();
+          onDone();
+        }
+      } catch (err) { toast(err.message, true); }
+    };
+  }
+
   // ============================================================
   // Router
   // ============================================================
@@ -1770,6 +2058,15 @@
     const reset = (location.hash || '').match(/^#\/reset\/([a-f0-9]{64})$/i);
     if (reset && !state.user) return resetView(reset[1]);
     if (!state.user) {
+      // Directe tenant-link: #/t/<slug> zet de context en gaat door naar login.
+      const tSel = (location.hash || '').match(/^#\/t\/([a-z0-9-]{2,30})$/i);
+      if (tSel) {
+        try { await selectTenant(tSel[1].toLowerCase()); } catch { clearTenant(); }
+        location.hash = '#/login'; // hashchange triggert route() opnieuw
+        return;
+      }
+      if (location.hash === '#/super/login') return loginView('', true);
+      if (!state.tenant) return portalView();
       if (location.hash === '#/wachtwoord-vergeten') return forgotView();
       loginView(); return;
     }
@@ -1780,6 +2077,10 @@
     const r = state.user.role;
 
     try {
+      if (r === 'superadmin') {
+        if (hash === '#/instellingen') return await settingsView();
+        return await superHome();
+      }
       if (detail && (r === 'coach' || r === 'admin')) return await memberDetailView(detail[1]);
       if (r === 'member') {
         if (hash === '#/checkin') return await checkinView();
@@ -1803,9 +2104,20 @@
 
   async function boot() {
     try {
-      const { user, profile } = await api('/me');
-      state.user = user; state.profile = profile;
-    } catch { state.user = null; }
+      await refreshMe();
+    } catch {
+      state.user = null;
+      // Tenant-context voor de login bepalen: expliciete #/t/-link wint
+      // (route() handelt die af), dan de onthouden keuze, dan het domein
+      // (custom_domain, bijv. hblwellnessform.com → hbl). Niets? Portal.
+      if (!(location.hash || '').match(/^#\/t\//i)) {
+        const saved = localStorage.getItem('hf-tenant');
+        if (saved) await selectTenant(saved).catch(() => clearTenant());
+        if (!state.tenant) {
+          try { setTenant((await api('/tenant/current')).tenant); } catch {}
+        }
+      }
+    }
     route();
   }
 

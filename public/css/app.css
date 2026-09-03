@@ -128,8 +128,8 @@ button { font: inherit; }
 .shell {
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: auto 1fr;
-  grid-template-areas: "header" "main";
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas: "acting" "header" "main";
   min-height: 100dvh;
   transition: grid-template-columns .2s ease;
 }
@@ -254,7 +254,7 @@ button { font: inherit; }
 
 /* Tablet: nav-kolom + main ernaast */
 @media (min-width: 768px) {
-  .shell { grid-template-columns: 220px 1fr; grid-template-rows: 1fr; grid-template-areas: "nav main"; }
+  .shell { grid-template-columns: 220px 1fr; grid-template-rows: auto 1fr; grid-template-areas: "nav acting" "nav main"; }
   .sidebar { display: flex; }
   .topbar, .tabbar { display: none; }
   .main { padding: 28px clamp(16px, 4vw, 44px) 60px; }
@@ -572,3 +572,24 @@ table.table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .progress-fill { height: 100%; border-radius: 99px; background: var(--brand); transition: width .4s ease; }
 
 .skeleton { text-align:center; color: var(--ink-3); padding: 60px 0; }
+
+/* ---------- multi-tenant: branding, portal en act-as ---------- */
+.logo-mark img { display: block; width: 74%; height: 74%; object-fit: contain; border-radius: 6px; }
+.logo-mark.tenant-mark { background: var(--brand); color: #fff; font-weight: 800; font-size: 13px; letter-spacing: .02em; }
+.login-brand .logo-mark.tenant-mark { font-size: 18px; }
+
+.portal-item { text-decoration: none; color: inherit; cursor: pointer; border-radius: 12px; padding: 12px 10px; }
+.portal-item:hover { background: var(--brand-tint); }
+.portal-logo { width: 38px; height: 38px; border-radius: 10px; object-fit: contain; flex: none; background: #fff; border: 1px solid var(--hairline); }
+
+.acting-bar {
+  grid-area: acting;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 9px 16px; background: var(--brand); color: #fff;
+  font-size: 13.5px; font-weight: 650;
+}
+.acting-bar button {
+  border: 1px solid rgba(255, 255, 255, .4); background: rgba(255, 255, 255, .14); color: #fff;
+  border-radius: 999px; padding: 5px 12px; cursor: pointer; font-weight: 650; font-size: 12.5px;
+}
+.acting-bar button:hover { background: rgba(255, 255, 255, .26); }
