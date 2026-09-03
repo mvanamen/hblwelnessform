@@ -5,9 +5,13 @@ niet de hele repo.**
 
 ## Project & architectuur
 
-Voortgangsplatform voor een Herbalife-coach: deelnemers doen check-ins
+**Multi-tenant wit-label voortgangsplatform**: deelnemers doen check-ins
 (gewicht, energie, slaap, water, stemming) en zien een dashboard met
-grafieken; coaches volgen hun deelnemers; admins beheren alles.
+grafieken; coaches volgen hun deelnemers; admins beheren hun tenant.
+Elke aanbieder ("tenant") heeft eigen branding; tenant 1 = HBL Wellness
+Forms (hblwellnessform.com). De superadmin (maikelvanamen@gmail.com,
+`tenant_id NULL`) beheert tenants via het platformportaal en kan met
+"act-as" als beheerder in elke tenant stappen.
 
 - **Stack:** Node.js (Express) + better-sqlite3, vanilla-JS SPA — bewust
   géén buildstap, framework of bundler (draait op een Raspberry Pi).
@@ -22,9 +26,9 @@ grafieken; coaches volgen hun deelnemers; admins beheren alles.
 
 | Bestand | Functionaliteit |
 |---|---|
-| `server.js` | Álle API-routes: auth/login, wachtwoord(-reset), taal, uitnodigingslinks + registratie, member/coach/admin-endpoints, SPA-fallback |
-| `src/db.js` | Schema, idempotente migraties (ALTER-checks), admin-seed. DB-pad instelbaar via env `DB_PATH` |
-| `src/auth.js` | Sessies (httpOnly-cookie, sha256-token in db) + `requireRole()` — admin mag altijd overal bij |
+| `server.js` | Álle API-routes: auth/login, wachtwoord(-reset), taal, uitnodigingslinks + registratie, member/coach/admin-endpoints, publieke tenant-endpoints (`/api/tenants`, `/api/tenant/current`, `/api/tenant/:slug`), superadmin-endpoints (`/api/super/*`), SPA-fallback |
+| `src/db.js` | Schema, idempotente migraties (ALTER-checks + users-rebuild), tenants-tabel, admin- en superadmin-seed. DB-pad instelbaar via env `DB_PATH` |
+| `src/auth.js` | Sessies (httpOnly-cookie, sha256-token in db) + `requireRole()` — admin mag altijd overal bij (binnen z'n tenant). `requireSuper` (checkt `real_role`) en `setActingTenant` voor act-as |
 | `src/mail.js` | Resend-integratie + tweetalige resetmail-template. Zonder `RESEND_API_KEY` logt hij de link i.p.v. mailen |
 | `public/js/app.js` | De hele SPA: i18n-woordenboek `STR` (nl/en) + `t()`, hash-router `route()`, alle views, modals/toasts, iconen |
 | `public/js/dock.js` | **GooeyDock** — mobiele bottom nav met spring-physics (stiffness 150, damping 13), SVG-notch + squash & stretch. Persistente component in `#dock-root`, gevoed vanuit `shell()`. Niet vervangen door een gewone tabbalk zonder overleg |
@@ -33,6 +37,29 @@ grafieken; coaches volgen hun deelnemers; admins beheren alles.
 | `public/index.html` | SPA-shell, PWA-links (manifest, iconen), SW-registratie |
 | `public/sw.js` | Service worker: netwerk-eerst, API nooit gecachet. **Versie ophogen bij asset-wijzigingen** |
 | `.env` | RESEND_API_KEY, MAIL_FROM, CLOUDFLARE_API_TOKEN (DNS-edit, zone hblwellnessform.com) — geladen door systemd |
+
+## Multi-tenant (kernregels)
+
+- **Data-isolatie:** `users.tenant_id` (NULL = superadmin); e-mail uniek
+  per tenant (`UNIQUE(tenant_id, email)`). Alle coach/admin-queries filteren
+  op `req.user.tenant_id` — élke nieuwe `WHERE id = ?`-lookup op users moet
+  `AND tenant_id = ?` krijgen, anders lekt data tussen tenants.
+- **Tenant-resolutie pre-auth:** `tenantFromRequest()` — slug uit body/query
+  (`tenant`), anders Host-header → `tenants.custom_domain` (zo komt
+  hblwellnessform.com direct bij tenant `hbl` uit; eigen domeinen per tenant
+  werken later automatisch). Ingelogd = altijd `req.user.tenant_id`.
+- **Act-as:** superadmin zet `sessions.acting_tenant_id`; `currentUser()`
+  geeft hem dan `role='admin'` + die tenant_id (echte rol in `real_role`).
+  Superadmin-endpoints dus nooit achter `requireRole` (admin-bypass!) maar
+  achter `requireSuper`.
+- **Client:** `state.tenant` + `localStorage['hf-tenant']`; branding via
+  inline CSS-vars (`applyTenantBranding`). Flow: `#/t/<slug>` >
+  onthouden keuze > `/api/tenant/current` (domein) > portal. Superadmin-login
+  via `#/super/login`. Invite-/resetlinks dragen hun tenant in de API-response.
+- **Mail:** per tenant naam/kleur/logo/afzendernaam; afzender-dómein blijft
+  het platformdomein (Resend-verificatie).
+- PWA-manifest is (bewust) nog platform-branded; per-tenant manifest hoort
+  bij de latere eigen-domein-fase.
 
 ## Conventies & patterns
 
